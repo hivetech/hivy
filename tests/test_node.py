@@ -3,40 +3,65 @@
 # vim:fenc=utf-8
 #
 # Copyright (C) 2014 Hive Tech, SAS.
-# Distributed under terms of the MIT license.
 
 
-import unittest
 import time
+import unittest
+from flask.ext.testing import TestCase
+from werkzeug.datastructures import Headers
+from werkzeug.test import Client
 
 import hivy.app as app
-from hivy.node import Node
+from hivy.resources.node import Node
 
 
 #TODO Test RestNode._node_name()
-class RestNodeTestCase(unittest.TestCase):
+class RestNodeTestCase(TestCase):
 
     default_user = 'chuck'
+    invalid_test_token = '4321'
+    valid_test_token = '1234'
 
-    def setUp(self):
-        app.app.config['TESTING'] = True
-        self.app = app.app.test_client()
+    def create_app(self):
+        application = app.app
+        application.config['TESTING'] = True
+        return application
+
+    def test_node_resource_is_locked(self):
+        rv = self.client.get('/node')
+        self.assert_401(rv)
+        self.assertTrue('WWW-Authenticate' in rv.headers)
+        self.assertTrue('Token' in rv.headers['WWW-Authenticate'])
+
+    def test_node_invalid_token_rejected(self):
+        h = Headers()
+        h.add('Authorization', self.invalid_test_token)
+        rv = Client.open(self.client, path='/node', headers=h)
+        self.assert_401(rv)
 
     def test_get_node_informations(self):
-        infos = self.app.get('/node')
-        assert 'id' in infos.data
+        h = Headers()
+        h.add('Authorization', self.valid_test_token)
+        rv = self.client.get('/node', headers=h)
+        self.assertTrue('id' in rv.data)
+        self.assertTrue(self.default_user in rv.data)
+        self.assertTrue('state' in rv.data)
 
     def test_create_node(self):
-        # Wait for the container to be correctly started
-        time.sleep(2)
-        feedback = self.app.post('/node')
-        assert 'error' not in feedback.data
-        assert feedback.data
+        h = Headers()
+        h.add('Authorization', self.valid_test_token)
+        rv = self.client.post('/node', headers=h)
+        assert 'error' not in rv.data
+        assert rv.data
 
     def test_delete_node(self):
-        feedback = self.app.delete('/node')
-        assert 'error' not in feedback.data
-        assert feedback.data
+        # Wait for the container to be correctly started
+        time.sleep(3)
+        h = Headers()
+        h.add('Authorization', self.valid_test_token)
+        rv = self.client.delete('/node', headers=h)
+        assert 'error' not in rv.data
+        assert rv.data
 
 
 class NodeTestCase(unittest.TestCase):
@@ -48,12 +73,11 @@ class NodeTestCase(unittest.TestCase):
     def setUp(self):
         self.node = Node(self.image_test, self.name_test)
 
-    '''
-    def test_check(self):
-        report = self.node.check(self.servers_test)
-        assert report
-        assert report['home']
-    '''
+    # Avoiding salt dependency for now
+    #def test_check(self):
+        #report = self.node.check(self.servers_test)
+        #assert report
+        #assert report['home']
 
     def test_describe_node(self):
         description = self.node.describe()
@@ -66,7 +90,7 @@ class NodeTestCase(unittest.TestCase):
 
     def test_destroy_node(self):
         # Wait for the container to be correctly started
-        time.sleep(2)
+        time.sleep(3)
         feedback = self.node.destroy()
         assert 'error' not in feedback
         assert feedback

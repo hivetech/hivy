@@ -14,6 +14,7 @@ requires = [
     'stevedore>=0.13',
     'salt>=0.17.5',
     'nose>=1.3.0',
+    'Flask-Testing==0.4',
     'docker-py>=0.2.3']
 
 
@@ -39,7 +40,7 @@ setup(
     url="https://github.com/hivetech/hivy",
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
-        'License :: OSI Approved :: MIT Licence',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',

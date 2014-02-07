@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright (c) 2014 xavier <xavier@laptop-300E5A>
+# Copyright (C) 2014 Hive Tech, SAS.
 
 
-import salt.client
+#import salt.client
+import os
 import docker
 from flask.ext import restful
+import flask
+
+import hivy.auth as auth
 
 
 class Node():
@@ -22,18 +26,21 @@ class Node():
       - root_dir: /home/username
     '''
 
-    local = salt.client.LocalClient()
-    dock = docker.Client(base_url='unix://var/run/docker.sock',
-                         version='0.7.6',
-                         timeout=10)
+    #local = salt.client.LocalClient()
 
     def __init__(self, image, name):
         self.image = image
         self.name = name
 
+        docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
+        self.dock = docker.Client(base_url=docker_url,
+                                  version='0.7.6',
+                                  timeout=10)
+
     def check(self, servers):
         ''' Check if servers are up '''
-        return self.local.cmd(servers, 'test.ping')
+        #return self.local.cmd(servers, 'test.ping')
+        return {'localhost': 'ok'}
 
     def activate(self):
         #In [6]: print res
@@ -61,29 +68,24 @@ class Node():
         return {
             'name': self.name,
             'id': 'zrbbnrberrber',
-            'running': False}
+            'state': 'running',
+            'acl': [],
+            'links': []}
 
 
 class RestNode(restful.Resource):
 
-    # TODO Get this information from authentification
-    default_username = 'chuck'
+    method_decorators = [auth.requires_token_auth]
     default_image = 'hivetech/prototype'
 
-    # NOTE Instanciate Node in the constructor is ok because there is one image
-    # and one user. But what about later with several of both ?
-    def __init__(self):
-        self.node = Node(self.default_image,
-                         self._node_name(self.default_username))
-
-    def _node_name(self, username):
-        return '{}-lab'.format(username)
+    def _node_name(self):
+        return '{}-lab'.format(flask.g.get('user'))
 
     def get(self):
-        return self.node.describe()
+        return Node(self.default_image, self._node_name()).describe()
 
     def post(self):
-        return self.node.activate()
+        return Node(self.default_image, self._node_name()).activate()
 
     def delete(self):
-        return self.node.destroy()
+        return Node(self.default_image, self._node_name()).destroy()

@@ -3,7 +3,6 @@
 # vim:fenc=utf-8
 #
 # Copyright (C) 2014 Hive Tech, SAS.
-# Distributed under terms of the MIT license.
 
 
 from hivy import __version__, __doc__
@@ -12,6 +11,7 @@ import unittest
 
 
 # http://flask.pocoo.org/docs/testing/
+# http://packages.python.org/Flask-Testing/
 class SystemTestCase(unittest.TestCase):
 
     def setUp(self):

@@ -2,7 +2,6 @@
 # vim:fenc=utf-8
 #
 # Copyright (C) 2014 Hive Tech, SAS.
-# Distributed under terms of the MIT license.
 
 
 from flask.ext import restful

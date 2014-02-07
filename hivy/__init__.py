@@ -1,7 +1,8 @@
+__package__ = 'hivy'
 __author__ = 'Xavier Bruhiere'
 __copyright__ = 'Hive Tech, SAS'
-__licence__ = 'MIT'
-__version__ = '0.0.1'
+__licence__ = 'Apache 2.0'
+__version__ = '0.0.2'
 __doc__ = {
     'status': 'GET /status',
     'version': 'GET /version',

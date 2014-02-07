@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright (c) 2014 xavier <xavier@laptop-300E5A>
+# Copyright (c) 2014 Hive Tech, SAS.
 
 
 '''Hive api
@@ -21,12 +21,12 @@ Options:
 '''
 
 
-from flask import Flask
+from flask import Flask, request
 from flask.ext import restful
 from docopt import docopt
 
-import hivy.system as system
-import hivy.node as node
+import hivy.resources.system as system
+import hivy.resources.node as node
 
 
 app = Flask(__name__)
@@ -40,6 +40,18 @@ api.add_resource(system.Status, '/')
 api.add_resource(system.Version, '/version')
 api.add_resource(system.Doc, '/doc')
 api.add_resource(node.RestNode, '/node')
+
+
+#TODO Use it for logging and perfs
+@app.before_request
+def before_request():
+    print request
+
+
+@app.after_request
+def after_request(response):
+    print response
+    return response
 
 
 if __name__ == '__main__':
