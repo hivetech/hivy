@@ -56,7 +56,7 @@ class RestNodeTestCase(TestCase):
 
     def test_delete_node(self):
         # Wait for the container to be correctly started
-        time.sleep(3)
+        time.sleep(5)
         h = Headers()
         h.add('Authorization', self.valid_test_token)
         rv = self.client.delete('/node', headers=h)
@@ -90,7 +90,7 @@ class NodeTestCase(unittest.TestCase):
 
     def test_destroy_node(self):
         # Wait for the container to be correctly started
-        time.sleep(3)
+        time.sleep(5)
         feedback = self.node.destroy()
         assert 'error' not in feedback
         assert feedback

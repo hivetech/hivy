@@ -1,0 +1,7 @@
+#! /bin/bash
+
+if [ -z "$NODE_ID" ]; then
+  export NODE_ID="$(hostname)"
+fi
+
+/usr/bin/serf agent -role $NODE_ID

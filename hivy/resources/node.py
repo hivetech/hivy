@@ -27,6 +27,7 @@ class Node():
     '''
 
     #local = salt.client.LocalClient()
+    container = None
 
     def __init__(self, image, name):
         self.image = image
@@ -37,23 +38,28 @@ class Node():
                                   version='0.7.6',
                                   timeout=10)
 
+    #TODO Detection salt master ip
+    def _salt_master_ip(self):
+        return os.environ.get('SALT_MASTER_URL', 'localhost')
+
     def check(self, servers):
         ''' Check if servers are up '''
         #return self.local.cmd(servers, 'test.ping')
         return {'localhost': 'ok'}
 
     def activate(self):
-        #In [6]: print res
-        #{u'Id': u'8d8c2cf070adda1...'}
         try:
-            feedback = self.dock.create_container(
+            self.container = self.dock.create_container(
                 self.image,
                 detach=True,
+                environment={'SALT_MASTER': self._salt_master_ip()},
+                hostname=self.name,
                 name=self.name)
-            self.dock.start(feedback['Id'])
+            self.dock.start(self.container['Id'])
         except docker.APIError, error:
-            feedback = {'error': error}
-        return feedback
+            self.container = {'error': error}
+
+        return self.container
 
     def destroy(self):
         try:
@@ -76,7 +82,7 @@ class Node():
 class RestNode(restful.Resource):
 
     method_decorators = [auth.requires_token_auth]
-    default_image = 'hivetech/prototype'
+    default_image = os.environ.get('NODE_IMAGE', 'hackliff/lab')
 
     def _node_name(self):
         return '{}-lab'.format(flask.g.get('user'))
