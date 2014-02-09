@@ -6,6 +6,7 @@
 
 
 import time
+import os
 import unittest
 from flask.ext.testing import TestCase
 from werkzeug.datastructures import Headers
@@ -21,6 +22,7 @@ class RestNodeTestCase(TestCase):
     default_user = 'chuck'
     invalid_test_token = '4321'
     valid_test_token = '1234'
+    docker_ready = os.environ.get('DOCKER_READY')
 
     def create_app(self):
         application = app.app
@@ -48,20 +50,26 @@ class RestNodeTestCase(TestCase):
         self.assertTrue('state' in rv.data)
 
     def test_create_node(self):
-        h = Headers()
-        h.add('Authorization', self.valid_test_token)
-        rv = self.client.post('/node', headers=h)
-        assert 'error' not in rv.data
-        assert rv.data
+        if self.docker_ready:
+            h = Headers()
+            h.add('Authorization', self.valid_test_token)
+            rv = self.client.post('/node', headers=h)
+            assert 'error' not in rv.data
+            assert rv.data
+        else:
+            pass
 
     def test_delete_node(self):
-        # Wait for the container to be correctly started
-        time.sleep(5)
-        h = Headers()
-        h.add('Authorization', self.valid_test_token)
-        rv = self.client.delete('/node', headers=h)
-        assert 'error' not in rv.data
-        assert rv.data
+        if self.docker_ready:
+            # Wait for the container to be correctly started
+            time.sleep(5)
+            h = Headers()
+            h.add('Authorization', self.valid_test_token)
+            rv = self.client.delete('/node', headers=h)
+            assert 'error' not in rv.data
+            assert rv.data
+        else:
+            pass
 
 
 class NodeTestCase(unittest.TestCase):
@@ -69,6 +77,7 @@ class NodeTestCase(unittest.TestCase):
     servers_test = '*'
     name_test = 'chuck-lab'
     image_test = 'hivetech/prototype'
+    docker_ready = os.environ.get('DOCKER_READY')
 
     def setUp(self):
         self.node = Node(self.image_test, self.name_test)
@@ -84,13 +93,19 @@ class NodeTestCase(unittest.TestCase):
         assert 'id' in description
 
     def test_activate_node(self):
-        feedback = self.node.activate()
-        assert 'error' not in feedback
-        assert feedback
+        if self.docker_ready:
+            feedback = self.node.activate()
+            assert 'error' not in feedback
+            assert feedback
+        else:
+            pass
 
     def test_destroy_node(self):
-        # Wait for the container to be correctly started
-        time.sleep(5)
-        feedback = self.node.destroy()
-        assert 'error' not in feedback
-        assert feedback
+        if self.docker_ready:
+            # Wait for the container to be correctly started
+            time.sleep(5)
+            feedback = self.node.destroy()
+            assert 'error' not in feedback
+            assert feedback
+        else:
+            pass

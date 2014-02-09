@@ -4,4 +4,4 @@ if [ -z "$NODE_ID" ]; then
   export NODE_ID="$(hostname)"
 fi
 
-/usr/bin/serf agent -role $NODE_ID
+/usr/bin/serf agent -node $NODE_ID -tag role=$NODE_ROLE

@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 
-from hivy import __package__, __version__, __author__, __licence__
+from hivy import __project__, __version__, __author__, __licence__
 
 
 # Needs also : apt-get install swig
@@ -28,7 +28,7 @@ def long_description():
 
 
 setup(
-    name=__package__,
+    name=__project__,
     version=__version__,
     description='This plugin provides a RESTFul interface to unide',
     author=__author__,

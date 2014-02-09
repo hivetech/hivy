@@ -14,7 +14,7 @@ import flask
 import hivy.auth as auth
 
 
-class Node():
+class Node:
     '''
     Basic primitive of the infrastructure.
     Nodes are basically containers with high level methods for abstraction and

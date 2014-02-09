@@ -5,7 +5,7 @@
 
 
 from flask.ext import restful
-from hivy import __version__, __doc__
+from hivy import __version__, __api__
 
 
 class Status(restful.Resource):
@@ -23,4 +23,4 @@ class Version(restful.Resource):
 class Doc(restful.Resource):
 
     def get(self):
-        return {'doc': __doc__}
+        return {'doc': __api__}

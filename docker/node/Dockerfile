@@ -1,7 +1,7 @@
-# hivetech/lab image
-# Base lab for unide (unide.co)
+# hivetech/node image
+# Base node for unide (unide.co)
 # VERSION 0.0.1
-# docker run -d -name lab -e SALT_MASTER=192.168.0.11 -h lab hackliff/lab
+# docker run -d -name node -e SALT_MASTER=192.168.0.11 -h node hackliff/node
 
 # Administration
 FROM saltstack/ubuntu-13.10-minimal
@@ -30,7 +30,7 @@ RUN apt-get install -y salt-minion
 # -------------------------------------------------------------- #
 # FIXME SSH Issue. It managed to make it work but not sure about side effects
 # See http://stackoverflow.com/questions/18173889/cannot-access-centos-sshd-on-docker
-RUN echo 'root:lab' | chpasswd && \
+RUN echo 'root:unide' | chpasswd && \
   test -d /var/run/sshd || mkdir /var/run/sshd && \
   sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config && \
   sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
@@ -50,7 +50,7 @@ RUN unzip serf.zip && \
 # -------------------------------------------------------------- #
 ADD ./startup-serf /usr/bin/startup-serf
 ADD ./startup-salt-minion /usr/bin/startup-salt-minion
-ADD ./supervisor-lab.conf /etc/supervisord.conf
+ADD ./supervisor-node.conf /etc/supervisord.conf
 
 ENTRYPOINT ["/usr/bin/supervisord"]
 CMD ["-n"]

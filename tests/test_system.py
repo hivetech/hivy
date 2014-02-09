@@ -5,7 +5,7 @@
 # Copyright (C) 2014 Hive Tech, SAS.
 
 
-from hivy import __version__, __doc__
+from hivy import __version__, __api__
 import hivy.app as app
 import unittest
 
@@ -31,4 +31,4 @@ class SystemTestCase(unittest.TestCase):
 
     def test_get_global_doc(self):
         res = self.app.get('/doc')
-        assert res.data == '{"doc": %s}' % str(__doc__).replace('\'', '"')
+        assert res.data == '{"doc": %s}' % str(__api__).replace('\'', '"')
