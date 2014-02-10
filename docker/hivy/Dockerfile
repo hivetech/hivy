@@ -5,7 +5,7 @@
 
 # Administration
 # hivetech/pyscience is an ubuntu 13.10 image with most popular python packages
-FROM stackbrew/ubuntu:saucy
+FROM quay.io/hackliff/node
 MAINTAINER Xavier Bruhiere <xavier.bruhiere@gmail.com>
 
 # Speedup apt-get
@@ -13,18 +13,20 @@ RUN echo 'force-unsafe-io' | tee /etc/dpkg/dpkg.cfg.d/02apt-speedup
 # Reduce image size
 RUN echo 'DPkg::Post-Invoke {"/bin/rm -f /var/cache/apt/archives/*.deb || true";};' | tee /etc/apt/apt.conf.d/no-cache
 
-# Enable the necessary sources and upgrade to latest
-RUN echo "deb http://archive.ubuntu.com/ubuntu saucy main universe multiverse restricted" > /etc/apt/sources.list && \
-  apt-get -y update && apt-get upgrade -y -o DPkg::Options::=--force-confold
+# Dependencies
+RUN apt-get install -y libssl-dev swig git-core python-pip python-dev python-setuptools && \
+  pip install --use-mirrors --upgrade virtualenvwrapper
 
-# Local settings
-RUN apt-get install -y language-pack-fr wget git-core python-pip python-dev
+# -------------------------------------------------------------- #
+# ----    Hivy installation    --------------------------------- #
+# -------------------------------------------------------------- #
+#RUN pip install --use-mirrors hivy
+RUN git clone https://github.com/hivetech/hivy.git --branch develop --depth 1 && \
+  cd hivy && \
+  python setup.py install
 
+ENTRYPOINT ["/usr/bin/supervisord"]
+CMD ["-n"]
 
-# Install telepathy ----------------------------
-RUN pip install --use-mirrors hivy
-
-CMD ["--bind", "0.0.0.0", "--debug"]
-ENTRYPOINT ["hivy"]
-
-EXPOSE 5000
+# Serf, ssh and hivy ports
+EXPOSE 7946 7373 22 5000

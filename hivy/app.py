@@ -5,12 +5,12 @@
 # Copyright (c) 2014 Hive Tech, SAS.
 
 
-'''Hive api
+'''Hivy
 
 Usage:
-  api -h | --help
-  api --version
-  api [--bind=<ip>] [--port=<port>] [-d | --debug]
+  hivy -h | --help
+  hivy --version
+  hivy [--bind=<ip>] [--port=<port>] [-d | --debug]
 
 Options:
   -h --help       Show this screen.
@@ -27,6 +27,7 @@ from docopt import docopt
 
 import hivy.resources.system as system
 import hivy.resources.node as node
+import hivy.utils as utils
 
 
 app = Flask(__name__)
@@ -38,8 +39,8 @@ app.config.update(
 api = restful.Api(app)
 api.add_resource(system.Status, '/')
 api.add_resource(system.Version, '/version')
-api.add_resource(system.Doc, '/doc')
-api.add_resource(node.RestNode, '/node')
+api.add_resource(system.Doc, utils.api_url('doc'))
+api.add_resource(node.RestNode, utils.api_url('node'))
 
 
 #TODO Use it for logging and perfs
@@ -55,7 +56,7 @@ def after_request(response):
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='Hivy, Hive api 0.0.1')
+    args = docopt(__doc__, version='Hivy, Hive api 0.0.3')
 
     app.run(host=args['--bind'],
             port=int(args['--port']),

@@ -21,8 +21,9 @@ class RestNodeTestCase(TestCase):
 
     default_user = 'chuck'
     invalid_test_token = '4321'
-    valid_test_token = '1234'
+    valid_test_token = 'd2a879423e53ddbb6788bbc286647a793440f3db'
     docker_ready = os.environ.get('DOCKER_READY')
+    node_resource_path = '/v0/node'
 
     def create_app(self):
         application = app.app
@@ -30,7 +31,7 @@ class RestNodeTestCase(TestCase):
         return application
 
     def test_node_resource_is_locked(self):
-        rv = self.client.get('/node')
+        rv = self.client.get(self.node_resource_path)
         self.assert_401(rv)
         self.assertTrue('WWW-Authenticate' in rv.headers)
         self.assertTrue('Token' in rv.headers['WWW-Authenticate'])
@@ -38,24 +39,37 @@ class RestNodeTestCase(TestCase):
     def test_node_invalid_token_rejected(self):
         h = Headers()
         h.add('Authorization', self.invalid_test_token)
-        rv = Client.open(self.client, path='/node', headers=h)
+        rv = Client.open(self.client, path=self.node_resource_path, headers=h)
         self.assert_401(rv)
 
-    def test_get_node_informations(self):
-        h = Headers()
-        h.add('Authorization', self.valid_test_token)
-        rv = self.client.get('/node', headers=h)
-        self.assertTrue('id' in rv.data)
-        self.assertTrue(self.default_user in rv.data)
-        self.assertTrue('state' in rv.data)
+    def test_get_absent_node_informations(self):
+        if self.docker_ready:
+            h = Headers()
+            h.add('Authorization', self.valid_test_token)
+            rv = self.client.get(self.node_resource_path, headers=h)
+            self.assertTrue('error' in rv.data)
+        else:
+            pass
 
     def test_create_node(self):
         if self.docker_ready:
             h = Headers()
             h.add('Authorization', self.valid_test_token)
-            rv = self.client.post('/node', headers=h)
+            rv = self.client.post(self.node_resource_path, headers=h)
             assert 'error' not in rv.data
-            assert rv.data
+            assert 'Id' in rv.data
+            assert 'name' in rv.data
+        else:
+            pass
+
+    def test_get_existing_node_informations(self):
+        time.sleep(5)
+        if self.docker_ready:
+            h = Headers()
+            h.add('Authorization', self.valid_test_token)
+            rv = self.client.get(self.node_resource_path, headers=h)
+            for info in ['ip', 'node', 'state', 'name']:
+                self.assertTrue(info in rv.data)
         else:
             pass
 
@@ -65,9 +79,10 @@ class RestNodeTestCase(TestCase):
             time.sleep(5)
             h = Headers()
             h.add('Authorization', self.valid_test_token)
-            rv = self.client.delete('/node', headers=h)
+            rv = self.client.delete(self.node_resource_path, headers=h)
             assert 'error' not in rv.data
-            assert rv.data
+            assert 'name' in rv.data
+            assert 'destroyed' in rv.data
         else:
             pass
 
@@ -88,15 +103,28 @@ class NodeTestCase(unittest.TestCase):
         #assert report
         #assert report['home']
 
-    def test_describe_node(self):
-        description = self.node.describe()
-        assert 'id' in description
+    def test_inspect_absent_node(self):
+        if self.docker_ready:
+            description = self.node.inspect()
+            assert 'error' in description
+        else:
+            pass
 
     def test_activate_node(self):
         if self.docker_ready:
             feedback = self.node.activate()
             assert 'error' not in feedback
-            assert feedback
+            assert 'Id' in feedback
+            assert 'name' in feedback
+        else:
+            pass
+
+    def test_inspect_node(self):
+        time.sleep(5)
+        if self.docker_ready:
+            description = self.node.inspect()
+            for info in ['ip', 'node', 'state', 'name']:
+                self.assertTrue(info in description)
         else:
             pass
 
@@ -106,6 +134,7 @@ class NodeTestCase(unittest.TestCase):
             time.sleep(5)
             feedback = self.node.destroy()
             assert 'error' not in feedback
-            assert feedback
+            assert 'name' in feedback
+            assert 'destroyed' in feedback
         else:
             pass

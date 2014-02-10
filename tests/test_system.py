@@ -5,7 +5,7 @@
 # Copyright (C) 2014 Hive Tech, SAS.
 
 
-from hivy import __version__, __api__
+from hivy import __api__
 import hivy.app as app
 import unittest
 
@@ -23,12 +23,16 @@ class SystemTestCase(unittest.TestCase):
 
     def test_get_status(self):
         res = self.app.get('/')
-        assert res.data == '{"status": "ok"}'
+        for service in ['hivy', 'docker', 'serf', 'salt']:
+            self.assertTrue(service in res.data)
 
     def test_get_version(self):
         res = self.app.get('/version')
-        assert res.data == '{"version": "%s"}' % __version__
+        for info in ['major', 'minor', 'patch']:
+            self.assertTrue(info in res.data)
+        for service in ['docker', 'salt', 'serf']:
+            self.assertTrue(service in res.data)
 
     def test_get_global_doc(self):
-        res = self.app.get('/doc')
-        assert res.data == '{"doc": %s}' % str(__api__).replace('\'', '"')
+        res = self.app.get('/v0/doc')
+        assert res.data == '{"api": %s}' % str(__api__).replace('\'', '"')

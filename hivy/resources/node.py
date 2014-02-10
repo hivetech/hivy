@@ -27,7 +27,6 @@ class Node:
     '''
 
     #local = salt.client.LocalClient()
-    container = None
 
     def __init__(self, image, name):
         self.image = image
@@ -49,46 +48,68 @@ class Node:
 
     def activate(self):
         try:
-            self.container = self.dock.create_container(
+            feedback = self.dock.create_container(
                 self.image,
                 detach=True,
-                environment={'SALT_MASTER': self._salt_master_ip()},
+                environment={
+                    'SALT_MASTER': self._salt_master_ip(),
+                    'NODE_ID': self.name,
+                    'NODE_ROLE': 'lab'},
                 hostname=self.name,
                 name=self.name)
-            self.dock.start(self.container['Id'])
+            feedback.update({'name': self.name})
+            self.dock.start(self.feedback['Id'])
         except docker.APIError, error:
-            self.container = {'error': error}
+            feedback = {'error': str(error)}
 
-        return self.container
+        return feedback
 
     def destroy(self):
         try:
             self.dock.stop(self.name)
             self.dock.remove_container(self.name)
-            return {self.name: True}
+            return {
+                'name': self.name,
+                'destroyed': True}
         except docker.APIError, error:
-            return {'error': error}
+            return {'error': str(error)}
 
-    def describe(self):
-        #TODO Get useful informations
-        return {
-            'name': self.name,
-            'id': 'zrbbnrberrber',
-            'state': 'running',
-            'acl': [],
-            'links': []}
+    def inspect(self):
+        try:
+            node = self.dock.inspect_container(self.name)
+            infos = {
+                'name': self.name,
+                'ip': '',
+                'state': node['State'],
+                'node': {
+                    'created': node['Created'],
+                    'id': node['ID'],
+                    'env': node['Config']['Env'],
+                    'cpu': node['Config']['CpuShares'],
+                    'memory': node['Config']['Memory'],
+                    'memory_swap': node['Config']['MemorySwap'],
+                    'image': node['Config']['Image'],
+                    'ports': node['HostConfig']['PortBindings'],
+                    'hostname': node['Config']['Hostname']
+                },
+                'acl': [],
+                'links': []}
+        except docker.APIError, error:
+            infos = {'error': str(error)}
+
+        return infos
 
 
 class RestNode(restful.Resource):
 
     method_decorators = [auth.requires_token_auth]
-    default_image = os.environ.get('NODE_IMAGE', 'hackliff/lab')
+    default_image = os.environ.get('NODE_IMAGE', 'quay.io/hackliff/node')
 
     def _node_name(self):
         return '{}-lab'.format(flask.g.get('user'))
 
     def get(self):
-        return Node(self.default_image, self._node_name()).describe()
+        return Node(self.default_image, self._node_name()).inspect()
 
     def post(self):
         return Node(self.default_image, self._node_name()).activate()

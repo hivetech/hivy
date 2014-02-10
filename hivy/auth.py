@@ -10,9 +10,9 @@ from flask import request, Response, g
 
 
 tmp_users = {
-    '1234': 'chuck',
-    '4567': 'gekko',
-    '7890': 'johny'}
+    'd2a879423e53ddbb6788bbc286647a793440f3db': 'chuck',
+    'd5b4596e477eab637a5b5177333ba17440287bb5': 'gekko',
+    '22d047ebaedc0149ea6f1737d4a0ecac513451cf': 'johny'}
 
 
 def check_credentials(username, password):
@@ -26,8 +26,8 @@ def check_token(token):
 def auth_failed():
     ''' Sends a 401 response that enables basic auth '''
     return Response(
-        'Could not verify your access level for that URL.\n'
-        'You have to login with proper credentials', 401,
+        '{"error": "Could not verify your access level for that URL. '
+        'You have to login with proper credentials"}', 401,
         {'WWW-Authenticate': 'Token realm="Login Required"'})
 
 

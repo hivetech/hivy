@@ -5,12 +5,12 @@
 # Copyright (c) 2014 Hive Tech, SAS.
 
 
-'''Hive api
+'''Hivy
 
 Usage:
-  api -h | --help
-  api --version
-  api [--bind=<ip>] [--port=<port>] [-d | --debug]
+  hivy -h | --help
+  hivy --version
+  hivy [--bind=<ip>] [--port=<port>] [-d | --debug]
 
 Options:
   -h --help       Show this screen.
@@ -55,7 +55,7 @@ def after_request(response):
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='Hivy, Hive api 0.0.1')
+    args = docopt(__doc__, version='Hivy, Hive api 0.0.3')
 
     app.run(host=args['--bind'],
             port=int(args['--port']),
