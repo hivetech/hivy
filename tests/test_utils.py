@@ -29,3 +29,9 @@ class UtilsTestCase(unittest.TestCase):
         self._check_sub_version(version.major)
         self._check_sub_version(version.minor)
         self._check_sub_version(version.patch)
+
+    def test_running_process_detection(self):
+        self.assertTrue(utils.is_running('python'))
+
+    def test_not_running_process_detection(self):
+        self.assertFalse(utils.is_running('abracadabra'))

@@ -10,10 +10,9 @@ requires = [
     'docopt>=0.6.1',
     'itsdangerous>=0.23',
     'pytz>=2013.9',
-    'six',
     'salt>=0.17.5',
     'nose>=1.3.0',
-    'Flask-Testing==0.4',
+    'Flask-Testing',
     'docker-py>=0.2.3']
 
 

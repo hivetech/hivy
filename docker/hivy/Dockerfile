@@ -25,6 +25,9 @@ RUN git clone https://github.com/hivetech/hivy.git --branch develop --depth 1 &&
   cd hivy && \
   python setup.py install
 
+ENV NODE_ID hivy
+ADD ./supervisor-hivy.conf /etc/supervisord.conf
+
 ENTRYPOINT ["/usr/bin/supervisord"]
 CMD ["-n"]
 

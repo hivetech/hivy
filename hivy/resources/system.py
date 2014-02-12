@@ -5,7 +5,10 @@
 
 
 import os
+import sh
+import docker
 from flask.ext import restful
+
 from hivy import __api__
 import hivy.utils as utils
 
@@ -13,21 +16,23 @@ import hivy.utils as utils
 class Status(restful.Resource):
 
     def _hivy_status(self):
-        return os.environ.get('HIVY_STATUS', 'ok')
+        return os.environ.get('HIVY_STATUS', True)
 
     def get(self):
         #TODO Get hivy servers, salt, docker and serf real status
         return {
             'hivy': self._hivy_status(),
             'sub-systems': {
-                'docker': 'ok',
-                'salt-master': 'ok',
-                'serf': 'ok'
+                'docker': utils.is_running('docker'),
+                'salt-master': utils.is_running('salt-master'),
+                'serf': utils.is_running('serf')
             }
         }
 
 
 class Version(restful.Resource):
+
+    dock = docker.Client('unix:///var/run/docker.sock')
 
     def get(self):
         # TODO Get Serf, salt and docker versions as well
@@ -37,15 +42,9 @@ class Version(restful.Resource):
                 'major': version.major,
                 'minor': version.minor,
                 'patch': version.patch},
-            'docker': {
-                'server': '0.7.6',  # dock.version()
-                'client': '0.7.6',
-                'lxc': '1.0.0.alpha1',
-                'go': '1.2'},
-            'serf': {
-                'agent': '0.4.1',
-                'protocol': '3'},
-            'salt': '0.17.5'
+            'docker': self.dock.version(),
+            'serf': sh.serf('--version').split('\n')[:-1],
+            'salt': sh.salt('--version').split('\n')[:-1]
         }
 
 

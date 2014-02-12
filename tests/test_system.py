@@ -5,8 +5,7 @@
 # Copyright (C) 2014 Hive Tech, SAS.
 
 
-from hivy import __api__
-import hivy.app as app
+import hivy
 import unittest
 
 
@@ -15,8 +14,8 @@ import unittest
 class SystemTestCase(unittest.TestCase):
 
     def setUp(self):
-        app.app.config['TESTING'] = True
-        self.app = app.app.test_client()
+        hivy.app.config['TESTING'] = True
+        self.app = hivy.app.test_client()
 
     def tearDown(self):
         pass
@@ -35,4 +34,4 @@ class SystemTestCase(unittest.TestCase):
 
     def test_get_global_doc(self):
         res = self.app.get('/v0/doc')
-        assert res.data == '{"api": %s}' % str(__api__).replace('\'', '"')
+        assert res.data == '{"api": %s}' % str(hivy.__api__).replace('\'', '"')

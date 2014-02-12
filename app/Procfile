@@ -1,3 +1,3 @@
 web: hivy --bind 0.0.0.0 --debug
 serf: serf agent -node hivy -tag role=maestro
-salt: echo "will be available soon..." && while true; do sleep 10000; done
+salt: salt-master -l debug -c /etc/salt

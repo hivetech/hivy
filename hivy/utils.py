@@ -4,11 +4,11 @@
 #
 # Copyright (C) 2014 Hive Tech, SAS.
 
-
+import sh
 from hivy import __version__
 
 
-class Version:
+class Version(object):
     ''' Provide a convenient way to manipulate version '''
     def __init__(self):
         _version = __version__.split('.')
@@ -19,3 +19,12 @@ class Version:
 
 def api_url(resource):
     return '/v{}/{}'.format(Version().major, resource)
+
+
+def is_running(process):
+    try:
+        sh.pgrep(process)
+        flag = True
+    except sh.ErrorReturnCode_1:
+        flag = False
+    return flag

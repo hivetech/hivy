@@ -12,7 +12,7 @@ from flask.ext.testing import TestCase
 from werkzeug.datastructures import Headers
 from werkzeug.test import Client
 
-import hivy.app as app
+from hivy import app
 from hivy.resources.node import Node
 
 
@@ -26,9 +26,8 @@ class RestNodeTestCase(TestCase):
     node_resource_path = '/v0/node'
 
     def create_app(self):
-        application = app.app
-        application.config['TESTING'] = True
-        return application
+        app.config['TESTING'] = True
+        return app
 
     def test_node_resource_is_locked(self):
         rv = self.client.get(self.node_resource_path)
@@ -63,8 +62,8 @@ class RestNodeTestCase(TestCase):
             pass
 
     def test_get_existing_node_informations(self):
-        time.sleep(5)
         if self.docker_ready:
+            time.sleep(5)
             h = Headers()
             h.add('Authorization', self.valid_test_token)
             rv = self.client.get(self.node_resource_path, headers=h)
@@ -91,7 +90,7 @@ class NodeTestCase(unittest.TestCase):
 
     servers_test = '*'
     name_test = 'chuck-lab'
-    image_test = 'hivetech/prototype'
+    image_test = os.environ.get('NODE_IMAGE', 'quay.io/hackliff/node')
     docker_ready = os.environ.get('DOCKER_READY')
 
     def setUp(self):
@@ -120,8 +119,8 @@ class NodeTestCase(unittest.TestCase):
             pass
 
     def test_inspect_node(self):
-        time.sleep(5)
         if self.docker_ready:
+            time.sleep(5)
             description = self.node.inspect()
             for info in ['ip', 'node', 'state', 'name']:
                 self.assertTrue(info in description)

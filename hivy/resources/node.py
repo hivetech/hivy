@@ -14,7 +14,7 @@ import flask
 import hivy.auth as auth
 
 
-class Node:
+class Node(object):
     '''
     Basic primitive of the infrastructure.
     Nodes are basically containers with high level methods for abstraction and
@@ -58,7 +58,7 @@ class Node:
                 hostname=self.name,
                 name=self.name)
             feedback.update({'name': self.name})
-            self.dock.start(self.feedback['Id'])
+            self.dock.start(feedback['Id'])
         except docker.APIError, error:
             feedback = {'error': str(error)}
 
