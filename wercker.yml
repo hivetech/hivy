@@ -10,16 +10,21 @@ build:
         - virtualenv:
             name: setup virtual environment
 
-        # A step that executes `pip install` command.
+        # Python dependencies
+        - pip-install
+
+        # Install testing package.
         - pip-install:
-            packages_list: "nose flake8 coveralls"
+            requirements_file: "dev-requirements.txt"
 
         # A custom script step, name value is used in the UI
         # and the code value contains the command that get executed
         - script:
             name: run tests
             code: |
-                nosetests tests
+                - flake8 hivy tests
+                - nosetests -w tests --with-coverage --cover-package=hivy
+                - coveralls
 
     after-steps:
         - hipchat-notify:

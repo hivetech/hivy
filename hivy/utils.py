@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
@@ -23,7 +22,8 @@ def api_url(resource):
 
 def is_running(process):
     try:
-        sh.pgrep(process)
+        pgrep = sh.Command('/usr/bin/pgrep')
+        pgrep(process)
         flag = True
     except sh.ErrorReturnCode_1:
         flag = False

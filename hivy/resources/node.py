@@ -6,12 +6,14 @@
 
 
 #import salt.client
+import time
 import os
 import docker
 from flask.ext import restful
 import flask
 
 import hivy.auth as auth
+import hivy.reactor.reactor as reactor
 
 
 class Node(object):
@@ -36,6 +38,7 @@ class Node(object):
         self.dock = docker.Client(base_url=docker_url,
                                   version='0.7.6',
                                   timeout=10)
+        self.serf = reactor.Serf()
 
     #TODO Detection salt master ip
     def _salt_master_ip(self):
@@ -51,14 +54,17 @@ class Node(object):
             feedback = self.dock.create_container(
                 self.image,
                 detach=True,
+                hostname=self.name,
+                name=self.name,
+                ports=[22],
                 environment={
                     'SALT_MASTER': self._salt_master_ip(),
                     'NODE_ID': self.name,
-                    'NODE_ROLE': 'lab'},
-                hostname=self.name,
-                name=self.name)
+                    'NODE_ROLE': 'lab'
+                }
+            )
             feedback.update({'name': self.name})
-            self.dock.start(feedback['Id'])
+            self.dock.start(feedback['Id'], port_bindings={22: None})
         except docker.APIError, error:
             feedback = {'error': str(error)}
 
@@ -79,7 +85,8 @@ class Node(object):
             node = self.dock.inspect_container(self.name)
             infos = {
                 'name': self.name,
-                'ip': '',
+                'ip': 'http://unide.co:{}'.format(
+                    node['NetworkSettings']['Ports']['22/tcp'][0]['HostPort']),
                 'state': node['State'],
                 'node': {
                     'created': node['Created'],
@@ -90,6 +97,7 @@ class Node(object):
                     'memory_swap': node['Config']['MemorySwap'],
                     'image': node['Config']['Image'],
                     'ports': node['HostConfig']['PortBindings'],
+                    'virtual_ip': node['NetworkSettings']['IPAddress'],
                     'hostname': node['Config']['Hostname']
                 },
                 'acl': [],
@@ -98,6 +106,20 @@ class Node(object):
             infos = {'error': str(error)}
 
         return infos
+
+    def register(self, retry=3):
+        infos = self.inspect()
+        success = False
+        while retry and not success:
+            feedback, success = \
+                self.serf.register_node(infos['node']['virtual_ip'])
+            time.sleep(3)
+            retry -= 1
+        return feedback, success
+
+    def forget(self):
+        infos = self.inspect()
+        return self.serf.unregister_node(infos['node']['virtual_ip'])
 
 
 class RestNode(restful.Resource):
@@ -112,7 +134,26 @@ class RestNode(restful.Resource):
         return Node(self.default_image, self._node_name()).inspect()
 
     def post(self):
-        return Node(self.default_image, self._node_name()).activate()
+        node = Node(self.default_image, self._node_name())
+        feedback = node.activate()
+        # Wait for the node to boot
+        registration, success = node.register()
+        feedback.update({
+            'registration': {
+                'message': registration,
+                'success': success
+            }
+        })
+        return feedback
 
     def delete(self):
-        return Node(self.default_image, self._node_name()).destroy()
+        node = Node(self.default_image, self._node_name())
+        unregistration, success = node.forget()
+        feedback = node.destroy()
+        feedback.update({
+            'unregistration': {
+                'message': unregistration,
+                'success': success
+            }
+        })
+        return feedback

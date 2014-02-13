@@ -11,8 +11,7 @@ requires = [
     'itsdangerous>=0.23',
     'pytz>=2013.9',
     'salt>=0.17.5',
-    'nose>=1.3.0',
-    'Flask-Testing',
+    'sh>=1.09',
     'docker-py>=0.2.3']
 
 
@@ -47,6 +46,6 @@ setup(
         'Topic :: Software Development',
         'Topic :: System :: Shells',
     ],
-    scripts=['app/hivy'],
+    scripts=['app/hivy', 'app/hivy-watchdog'],
     data_files=[(os.path.expanduser('~/.hivy'), ['app/Procfile'])]
 )

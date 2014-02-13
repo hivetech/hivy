@@ -7,6 +7,7 @@
 import hivy.resources.system as system
 import hivy.resources.node as node
 import hivy.utils as utils
+import hivy.reactor.hooks.utils as hooksutils
 
 
 routes = {
@@ -14,4 +15,8 @@ routes = {
     '/version': system.Version,
     utils.api_url('doc'): system.Doc,
     utils.api_url('node'): node.RestNode
+}
+
+hooks = {
+    'lab': hooksutils.Debug
 }

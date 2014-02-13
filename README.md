@@ -19,6 +19,8 @@ Installation
 Docker must be [installed](http://www.docker.io/gettingstarted/) on the server
 your are deploying the environments.
 
+You also need [serf v0.4.1](serfdom.io) for service orchestration.
+
 ```console
 $ (sudo) pip install hivy
 
@@ -35,6 +37,7 @@ Usage
 In a first terminal, fire up the server
 
 ```console
+$ serf agent -node hivy -tag role=master &
 $ hivy --bind 0.0.0.0 --debug
 ```
 
@@ -43,9 +46,24 @@ And play with it in another terminal
 ```console
 curl -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/
 
+# Get some informations
+curl http://0.0.0.0:5000/
+curl http://0.0.0.0:5000/version
+curl http://0.0.0.0:5000/v0/doc
+
 # Create a new environment
-curl -X POST -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/node
+curl -X POST -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/v0/node
 
 # Destroy it
-curl -X DELETE -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/node
+curl -X DELETE -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/v0/node
+```
+
+Tests
+-----
+
+```console
+$ Make tests
+
+$ # If docker is installed, you can test node interactions as well
+$ DOCKER_READY=true make tests
 ```

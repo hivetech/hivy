@@ -12,7 +12,7 @@ from flask.ext.testing import TestCase
 from werkzeug.datastructures import Headers
 from werkzeug.test import Client
 
-from hivy import app
+from hivy.app import app
 from hivy.resources.node import Node
 
 
@@ -23,6 +23,7 @@ class RestNodeTestCase(TestCase):
     invalid_test_token = '4321'
     valid_test_token = 'd2a879423e53ddbb6788bbc286647a793440f3db'
     docker_ready = os.environ.get('DOCKER_READY')
+    serf_ready = os.environ.get('SERF_READY')
     node_resource_path = '/v0/node'
 
     def create_app(self):
@@ -92,6 +93,7 @@ class NodeTestCase(unittest.TestCase):
     name_test = 'chuck-lab'
     image_test = os.environ.get('NODE_IMAGE', 'quay.io/hackliff/node')
     docker_ready = os.environ.get('DOCKER_READY')
+    serf_ready = os.environ.get('SERF_READY')
 
     def setUp(self):
         self.node = Node(self.image_test, self.name_test)
@@ -126,6 +128,12 @@ class NodeTestCase(unittest.TestCase):
                 self.assertTrue(info in description)
         else:
             pass
+
+    def test_register_node(self):
+        pass
+
+    def test_forget_node(self):
+        pass
 
     def test_destroy_node(self):
         if self.docker_ready:

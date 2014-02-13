@@ -13,7 +13,13 @@ package:
 
 tests: warn_missing_linters
 	flake8 tests hivy
-	nosetests -w tests --with-coverage --cover-package=hivy
+	nosetests -w tests --with-yanc --with-coverage --cover-package=hivy
+
+watch: warn_missing_linters
+	watchmedo shell-command \
+    --patterns="*.py;*.txt" \
+    --recursive \
+    --command="make tests" .
 
 present_pep8=$(shell which pep8)
 present_pyflakes=$(shell which pyflakes)
