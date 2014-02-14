@@ -9,6 +9,10 @@ from flask.ext import restful
 import os
 
 import hivy.settings as settings
+from hivy.logger import logger
+
+
+log = logger(__name__)
 
 
 app = Flask(__name__)
@@ -19,17 +23,17 @@ app.config.update(
 )
 
 api = restful.Api(app)
-for endpoint, resource in settings.routes.iteritems():
+for endpoint, resource in settings.ROUTES.iteritems():
     api.add_resource(resource, endpoint)
 
 
 #TODO Use it for logging and perfs
 @app.before_request
 def before_request():
-    print request
+    log.debug(request)
 
 
 @app.after_request
 def after_request(response):
-    print response
+    log.debug(request)
     return response

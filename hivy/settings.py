@@ -10,13 +10,16 @@ import hivy.utils as utils
 import hivy.reactor.hooks.utils as hooksutils
 
 
-routes = {
+ROUTES = {
     '/': system.Status,
-    '/version': system.Version,
     utils.api_url('doc'): system.Doc,
     utils.api_url('node'): node.RestNode
 }
 
-hooks = {
+HOOKS = {
     'lab': hooksutils.Debug
 }
+
+LOGFILE = '/tmp/hivy.log'
+LOG_FORMAT = (u'[{record.time:%m-%d %H:%M}] '
+              '{record.level_name}.{record.channel} {record.message}')

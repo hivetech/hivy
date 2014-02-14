@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
@@ -13,17 +12,17 @@ from werkzeug.datastructures import Headers
 from werkzeug.test import Client
 
 from hivy.app import app
-from hivy.resources.node import Node
+from hivy import DOCKER_ON, SERF_ON
+from hivy.node.factory import NodeFactory
+from hivy.node.foundation import NodeFoundation
 
 
 #TODO Test RestNode._node_name()
-class RestNodeTestCase(TestCase):
+class RestfulNodeTestCase(TestCase):
 
     default_user = 'chuck'
     invalid_test_token = '4321'
     valid_test_token = 'd2a879423e53ddbb6788bbc286647a793440f3db'
-    docker_ready = os.environ.get('DOCKER_READY')
-    serf_ready = os.environ.get('SERF_READY')
     node_resource_path = '/v0/node'
 
     def create_app(self):
@@ -43,7 +42,7 @@ class RestNodeTestCase(TestCase):
         self.assert_401(rv)
 
     def test_get_absent_node_informations(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             h = Headers()
             h.add('Authorization', self.valid_test_token)
             rv = self.client.get(self.node_resource_path, headers=h)
@@ -52,7 +51,7 @@ class RestNodeTestCase(TestCase):
             pass
 
     def test_create_node(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             h = Headers()
             h.add('Authorization', self.valid_test_token)
             rv = self.client.post(self.node_resource_path, headers=h)
@@ -63,7 +62,7 @@ class RestNodeTestCase(TestCase):
             pass
 
     def test_get_existing_node_informations(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             time.sleep(5)
             h = Headers()
             h.add('Authorization', self.valid_test_token)
@@ -74,7 +73,7 @@ class RestNodeTestCase(TestCase):
             pass
 
     def test_delete_node(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             # Wait for the container to be correctly started
             time.sleep(5)
             h = Headers()
@@ -87,32 +86,26 @@ class RestNodeTestCase(TestCase):
             pass
 
 
-class NodeTestCase(unittest.TestCase):
+class NodeFactoryTestCase(unittest.TestCase):
 
     servers_test = '*'
-    name_test = 'chuck-lab'
     image_test = os.environ.get('NODE_IMAGE', 'quay.io/hackliff/node')
-    docker_ready = os.environ.get('DOCKER_READY')
-    serf_ready = os.environ.get('SERF_READY')
+    role_test = 'test'
+    name_test = 'test-node-factory'
 
     def setUp(self):
-        self.node = Node(self.image_test, self.name_test)
-
-    # Avoiding salt dependency for now
-    #def test_check(self):
-        #report = self.node.check(self.servers_test)
-        #assert report
-        #assert report['home']
+        self.node = NodeFactory(
+            self.image_test, self.name_test, self.role_test)
 
     def test_inspect_absent_node(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             description = self.node.inspect()
             assert 'error' in description
         else:
             pass
 
     def test_activate_node(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             feedback = self.node.activate()
             assert 'error' not in feedback
             assert 'Id' in feedback
@@ -121,7 +114,7 @@ class NodeTestCase(unittest.TestCase):
             pass
 
     def test_inspect_node(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             time.sleep(5)
             description = self.node.inspect()
             for info in ['ip', 'node', 'state', 'name']:
@@ -129,19 +122,42 @@ class NodeTestCase(unittest.TestCase):
         else:
             pass
 
-    def test_register_node(self):
-        pass
-
-    def test_forget_node(self):
-        pass
-
     def test_destroy_node(self):
-        if self.docker_ready:
+        if DOCKER_ON:
             # Wait for the container to be correctly started
             time.sleep(5)
             feedback = self.node.destroy()
             assert 'error' not in feedback
             assert 'name' in feedback
             assert 'destroyed' in feedback
+        else:
+            pass
+
+
+class NodeFoundationTestCase(unittest.TestCase):
+
+    image_test = os.environ.get('NODE_IMAGE', 'quay.io/hackliff/node')
+    role_test = 'test'
+    name_test = 'test-node-foundation'
+
+    def setUp(self):
+        self.node = NodeFoundation(
+            self.image_test, self.name_test, self.role_test)
+
+    # Avoiding salt dependency for now
+    #def test_check(self):
+        #report = self.node.check(self.servers_test)
+        #assert report
+        #assert report['home']
+
+    def test_register_node(self):
+        if SERF_ON:
+            pass
+        else:
+            pass
+
+    def test_forget_node(self):
+        if SERF_ON:
+            pass
         else:
             pass

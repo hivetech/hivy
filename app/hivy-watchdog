@@ -31,6 +31,6 @@ if __name__ == '__main__':
     print args
 
     handler = SerfHandlerProxy()
-    for role, hook in settings.hooks.iteritems():
+    for role, hook in settings.HOOKS.iteritems():
         handler.register(role, hook())
     handler.run()

@@ -21,7 +21,7 @@ RUN apt-get install -y libssl-dev swig git-core python-pip python-dev python-set
 # ----    Hivy installation    --------------------------------- #
 # -------------------------------------------------------------- #
 #RUN pip install --use-mirrors hivy
-RUN git clone https://github.com/hivetech/hivy.git --branch develop --depth 1 && \
+RUN git clone --branch develop --depth 1 https://github.com/hivetech/hivy.git && \
   cd hivy && \
   python setup.py install
 

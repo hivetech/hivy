@@ -65,5 +65,5 @@ Tests
 $ Make tests
 
 $ # If docker is installed, you can test node interactions as well
-$ DOCKER_READY=true make tests
+$ USE_DOCKER=true make tests
 ```

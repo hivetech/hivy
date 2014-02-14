@@ -5,16 +5,14 @@
 # Copyright (C) 2014 Hive Tech, SAS.
 
 
-import os
 import unittest
 
+from hivy import DOCKER_ON, SERF_ON
 import hivy.reactor.reactor as reactor
 
 
 class SerfTestCase(unittest.TestCase):
 
-    serf_ready = os.environ.get('SERF_READY')
-    docker_ready = os.environ.get('DOCKER_READY')
     wrong_ip = '1.2.3.4'
 
     def setUp(self):
@@ -33,19 +31,8 @@ class SerfTestCase(unittest.TestCase):
         protocol_version = int(version[1].split()[2])
         self.assertTrue(protocol_version >= 3)
 
-    def test_detect_running_agent(self):
-        if self.serf_ready:
-            is_running = self.serf._ready()
-            self.assertTrue(is_running)
-        else:
-            pass
-
-    def test_detect_absent_agent(self):
-        is_running = self.serf._ready()
-        self.assertFalse(is_running)
-
     def test_command_failed_without_agent(self):
-        if self.serf_ready:
+        if SERF_ON:
             feedback, flag = self.serf._serf_command('join', self.wrong_ip)
             self.assertFalse(flag)
             self.assertTrue('no local agent' in feedback)
@@ -57,7 +44,7 @@ class SerfTestCase(unittest.TestCase):
         #   * A running local serf agent
         #   * A running lab
         #   * Its ip
-        if self.serf_ready and self.docker_ready:
+        if SERF_ON and DOCKER_ON:
             right_ip = '172.17.0.9'
             feedback, flag = self.serf.register_node(right_ip)
             self.assertTrue(flag)
@@ -67,7 +54,7 @@ class SerfTestCase(unittest.TestCase):
 
     def test_register_absent_node(self):
         #FIXME We need a running agent here as well
-        if self.serf_ready:
+        if SERF_ON:
             feedback, flag = self.serf.register_node(self.wrong_ip)
             self.assertFalse(flag)
             self.assertTrue('Error' in feedback)

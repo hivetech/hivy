@@ -4,7 +4,7 @@ build:
     # The steps that will be executed on build
     steps:
         - install-packages:
-          packages: python-dev swig
+            packages: python-dev swig
 
         # A step that sets up the python virtual environment
         - virtualenv:

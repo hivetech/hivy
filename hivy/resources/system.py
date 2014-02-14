@@ -1,54 +1,66 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# Copyright (C) 2014 Hive Tech, SAS.
 
+'''
+  system resource
+  ---------------
+
+  Expose Hivy server informations
+
+  :copyright (c) 2014 Hive Tech, SAS.
+  :license: Apache 2.0, see LICENSE for more details.
+'''
 
 import os
 import sh
 import docker
 from flask.ext import restful
 
-from hivy import __api__
+from hivy import __api__, DOCKER_ON, SALT_ON, SERF_ON
 import hivy.utils as utils
+import hivy.reactor.reactor as reactor
 
 
 class Status(restful.Resource):
+    ''' Expose Hivy services states and versions '''
 
-    def _hivy_status(self):
-        return os.environ.get('HIVY_STATUS', True)
+    def __init__(self):
+        self.hivy_version = utils.Version()
+        self.serf = reactor.Serf()
+        self.salt = sh.Command('/usr/bin/salt-master')
+        docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
+        self.dock = docker.Client(base_url=docker_url,
+                                  version='0.7.6',
+                                  timeout=10)
 
     def get(self):
-        #TODO Get hivy servers, salt, docker and serf real status
+        ''' Inspect Hivy, docker, salt-master and serf states '''
+
         return {
-            'hivy': self._hivy_status(),
-            'sub-systems': {
-                'docker': utils.is_running('docker'),
-                'salt-master': utils.is_running('salt-master'),
-                'serf': utils.is_running('serf')
+            'state': {
+                'hivy': os.environ.get('HIVY_STATUS', True),
+                'sub-systems': {
+                    'docker': DOCKER_ON,
+                    'salt-master': SALT_ON,
+                    'serf': SERF_ON
+                }
+            },
+            'version': {
+                'hivy': {
+                    'major': self.hivy_version.major,
+                    'minor': self.hivy_version.minor,
+                    'patch': self.hivy_version.patch
+                },
+                'docker': self.dock.version(),
+                'serf': self.serf.version(),
+                'salt': str(self.salt('--version'))
             }
         }
 
 
-class Version(restful.Resource):
-
-    dock = docker.Client('unix:///var/run/docker.sock')
-
-    def get(self):
-        # TODO Get Serf, salt and docker versions as well
-        version = utils.Version()
-        return {
-            'hivy': {
-                'major': version.major,
-                'minor': version.minor,
-                'patch': version.patch},
-            'docker': self.dock.version(),
-            'serf': sh.serf('--version').split('\n')[:-1],
-            'salt': sh.salt('--version').split('\n')[:-1]
-        }
-
-
 class Doc(restful.Resource):
+    ''' Expose last api documentation '''
 
     def get(self):
+        ''' No magic here, see hivy.__setup__.py '''
         return {'api': __api__}

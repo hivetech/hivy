@@ -1,125 +1,24 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# Copyright (C) 2014 Hive Tech, SAS.
+
+'''
+  node resource
+  ---------------
+
+  Expose Hivy containers management.
+
+  :copyright (c) 2014 Hive Tech, SAS.
+  :license: Apache 2.0, see LICENSE for more details.
+'''
 
 
 #import salt.client
-import time
 import os
-import docker
 from flask.ext import restful
 import flask
 
 import hivy.auth as auth
-import hivy.reactor.reactor as reactor
-
-
-class Node(object):
-    '''
-    Basic primitive of the infrastructure.
-    Nodes are basically containers with high level methods for abstraction and
-    easy management.
-
-    salt-master must run as the same user as this script (usually system user)
-    Change in /etc/salt/master:
-      - user: username
-      - root_dir: /home/username
-    '''
-
-    #local = salt.client.LocalClient()
-
-    def __init__(self, image, name):
-        self.image = image
-        self.name = name
-
-        docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
-        self.dock = docker.Client(base_url=docker_url,
-                                  version='0.7.6',
-                                  timeout=10)
-        self.serf = reactor.Serf()
-
-    #TODO Detection salt master ip
-    def _salt_master_ip(self):
-        return os.environ.get('SALT_MASTER_URL', 'localhost')
-
-    def check(self, servers):
-        ''' Check if servers are up '''
-        #return self.local.cmd(servers, 'test.ping')
-        return {'localhost': 'ok'}
-
-    def activate(self):
-        try:
-            feedback = self.dock.create_container(
-                self.image,
-                detach=True,
-                hostname=self.name,
-                name=self.name,
-                ports=[22],
-                environment={
-                    'SALT_MASTER': self._salt_master_ip(),
-                    'NODE_ID': self.name,
-                    'NODE_ROLE': 'lab'
-                }
-            )
-            feedback.update({'name': self.name})
-            self.dock.start(feedback['Id'], port_bindings={22: None})
-        except docker.APIError, error:
-            feedback = {'error': str(error)}
-
-        return feedback
-
-    def destroy(self):
-        try:
-            self.dock.stop(self.name)
-            self.dock.remove_container(self.name)
-            return {
-                'name': self.name,
-                'destroyed': True}
-        except docker.APIError, error:
-            return {'error': str(error)}
-
-    def inspect(self):
-        try:
-            node = self.dock.inspect_container(self.name)
-            infos = {
-                'name': self.name,
-                'ip': 'http://unide.co:{}'.format(
-                    node['NetworkSettings']['Ports']['22/tcp'][0]['HostPort']),
-                'state': node['State'],
-                'node': {
-                    'created': node['Created'],
-                    'id': node['ID'],
-                    'env': node['Config']['Env'],
-                    'cpu': node['Config']['CpuShares'],
-                    'memory': node['Config']['Memory'],
-                    'memory_swap': node['Config']['MemorySwap'],
-                    'image': node['Config']['Image'],
-                    'ports': node['HostConfig']['PortBindings'],
-                    'virtual_ip': node['NetworkSettings']['IPAddress'],
-                    'hostname': node['Config']['Hostname']
-                },
-                'acl': [],
-                'links': []}
-        except docker.APIError, error:
-            infos = {'error': str(error)}
-
-        return infos
-
-    def register(self, retry=3):
-        infos = self.inspect()
-        success = False
-        while retry and not success:
-            feedback, success = \
-                self.serf.register_node(infos['node']['virtual_ip'])
-            time.sleep(3)
-            retry -= 1
-        return feedback, success
-
-    def forget(self):
-        infos = self.inspect()
-        return self.serf.unregister_node(infos['node']['virtual_ip'])
+from hivy.node.foundation import NodeFoundation
 
 
 class RestNode(restful.Resource):
@@ -131,10 +30,10 @@ class RestNode(restful.Resource):
         return '{}-lab'.format(flask.g.get('user'))
 
     def get(self):
-        return Node(self.default_image, self._node_name()).inspect()
+        return NodeFoundation(self.default_image, self._node_name()).inspect()
 
     def post(self):
-        node = Node(self.default_image, self._node_name())
+        node = NodeFoundation(self.default_image, self._node_name())
         feedback = node.activate()
         # Wait for the node to boot
         registration, success = node.register()
@@ -147,7 +46,7 @@ class RestNode(restful.Resource):
         return feedback
 
     def delete(self):
-        node = Node(self.default_image, self._node_name())
+        node = NodeFoundation(self.default_image, self._node_name())
         unregistration, success = node.forget()
         feedback = node.destroy()
         feedback.update({
