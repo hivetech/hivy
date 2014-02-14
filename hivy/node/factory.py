@@ -14,7 +14,7 @@
 
 import os
 import docker
-from hivy import SERVER_URL
+from hivy.settigs import SERVER_URL
 
 
 class NodeFactory(object):

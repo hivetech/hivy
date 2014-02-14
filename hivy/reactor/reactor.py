@@ -12,11 +12,11 @@
 '''
 
 import sh
-from hivy import SERF_ON
 from hivy.logger import logger
+import hivy.utils as utils
 
 
-log = logger(__name__)
+log = logger('hivy.reactor.' + __name__)
 
 
 class Serf(object):
@@ -26,12 +26,12 @@ class Serf(object):
         try:
             self.serf = sh.Command(path)
         except sh.CommandNotFound:
-            log.warn('serf command not found', path=path, activated=SERF_ON)
+            log.warn('serf command not found', path=path)
             self.serf = None
 
     def _serf_command(self, command, node_ip):
         ''' Safely perform the given serf subcommand '''
-        if SERF_ON:
+        if utils.is_available('serf'):
             try:
                 feedback = self.serf(command, node_ip)
                 flag = True

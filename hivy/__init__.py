@@ -23,13 +23,3 @@ __api__ = {
     'doc': 'GET /doc',
     'node': 'GET | POST | DELETE /node'
 }
-
-
-import hivy.utils as utils
-
-
-DOCKER_ON = utils.is_available('docker')
-SALT_ON = utils.is_available('salt-master')
-SERF_ON = utils.is_available('serf')
-
-SERVER_URL = 'http://unide.co'

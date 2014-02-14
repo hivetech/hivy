@@ -26,8 +26,7 @@ class LoggerTestCase(unittest.TestCase):
         log = logger.logger('batman')
         self.assertTrue(hasattr(log, 'msg'))
         self.assertTrue(isinstance(log._logger, logbook.base.Logger))
-        intra_logger = log._logger
-        self.assertTrue(intra_logger.name == 'batman')
+        self.assertTrue(log._logger.name == 'batman')
 
     def test_logger_default_setup(self):
         setup = logger.setup()
@@ -59,5 +58,6 @@ class LoggerTestCase(unittest.TestCase):
             with open(settings.LOGFILE, 'r') as fd:
                 text = fd.read()
                 for required_info in \
-                        [body, event_type, 'id', 'INFO', 'hivy.logger']:
+                        [body, event_type, 'id',
+                         'INFO', 'hivy.logger', 'timestamp']:
                     self.assertTrue(required_info in text)

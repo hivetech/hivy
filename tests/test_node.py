@@ -12,7 +12,7 @@ from werkzeug.datastructures import Headers
 from werkzeug.test import Client
 
 from hivy.app import app
-from hivy import DOCKER_ON, SERF_ON
+import hivy.test as test
 from hivy.node.factory import NodeFactory
 from hivy.node.foundation import NodeFoundation
 
@@ -41,49 +41,41 @@ class RestfulNodeTestCase(TestCase):
         rv = Client.open(self.client, path=self.node_resource_path, headers=h)
         self.assert_401(rv)
 
+    @test.docker_required
     def test_get_absent_node_informations(self):
-        if DOCKER_ON:
-            h = Headers()
-            h.add('Authorization', self.valid_test_token)
-            rv = self.client.get(self.node_resource_path, headers=h)
-            self.assertTrue('error' in rv.data)
-        else:
-            pass
+        h = Headers()
+        h.add('Authorization', self.valid_test_token)
+        rv = self.client.get(self.node_resource_path, headers=h)
+        self.assertTrue('error' in rv.data)
 
+    @test.docker_required
     def test_create_node(self):
-        if DOCKER_ON:
-            h = Headers()
-            h.add('Authorization', self.valid_test_token)
-            rv = self.client.post(self.node_resource_path, headers=h)
-            assert 'error' not in rv.data
-            assert 'Id' in rv.data
-            assert 'name' in rv.data
-        else:
-            pass
+        h = Headers()
+        h.add('Authorization', self.valid_test_token)
+        rv = self.client.post(self.node_resource_path, headers=h)
+        assert 'error' not in rv.data
+        assert 'Id' in rv.data
+        assert 'name' in rv.data
 
+    @test.docker_required
     def test_get_existing_node_informations(self):
-        if DOCKER_ON:
-            time.sleep(5)
-            h = Headers()
-            h.add('Authorization', self.valid_test_token)
-            rv = self.client.get(self.node_resource_path, headers=h)
-            for info in ['ip', 'node', 'state', 'name']:
-                self.assertTrue(info in rv.data)
-        else:
-            pass
+        time.sleep(5)
+        h = Headers()
+        h.add('Authorization', self.valid_test_token)
+        rv = self.client.get(self.node_resource_path, headers=h)
+        for info in ['ip', 'node', 'state', 'name']:
+            self.assertTrue(info in rv.data)
 
+    @test.docker_required
     def test_delete_node(self):
-        if DOCKER_ON:
-            # Wait for the container to be correctly started
-            time.sleep(5)
-            h = Headers()
-            h.add('Authorization', self.valid_test_token)
-            rv = self.client.delete(self.node_resource_path, headers=h)
-            assert 'error' not in rv.data
-            assert 'name' in rv.data
-            assert 'destroyed' in rv.data
-        else:
-            pass
+        # Wait for the container to be correctly started
+        time.sleep(5)
+        h = Headers()
+        h.add('Authorization', self.valid_test_token)
+        rv = self.client.delete(self.node_resource_path, headers=h)
+        assert 'error' not in rv.data
+        assert 'name' in rv.data
+        assert 'destroyed' in rv.data
 
 
 class NodeFactoryTestCase(unittest.TestCase):
@@ -97,41 +89,33 @@ class NodeFactoryTestCase(unittest.TestCase):
         self.node = NodeFactory(
             self.image_test, self.name_test, self.role_test)
 
+    @test.docker_required
     def test_inspect_absent_node(self):
-        if DOCKER_ON:
-            description = self.node.inspect()
-            assert 'error' in description
-        else:
-            pass
+        description = self.node.inspect()
+        assert 'error' in description
 
+    @test.docker_required
     def test_activate_node(self):
-        if DOCKER_ON:
-            feedback = self.node.activate()
-            assert 'error' not in feedback
-            assert 'Id' in feedback
-            assert 'name' in feedback
-        else:
-            pass
+        feedback = self.node.activate()
+        assert 'error' not in feedback
+        assert 'Id' in feedback
+        assert 'name' in feedback
 
+    @test.docker_required
     def test_inspect_node(self):
-        if DOCKER_ON:
-            time.sleep(5)
-            description = self.node.inspect()
-            for info in ['ip', 'node', 'state', 'name']:
-                self.assertTrue(info in description)
-        else:
-            pass
+        time.sleep(5)
+        description = self.node.inspect()
+        for info in ['ip', 'node', 'state', 'name']:
+            self.assertTrue(info in description)
 
+    @test.docker_required
     def test_destroy_node(self):
-        if DOCKER_ON:
-            # Wait for the container to be correctly started
-            time.sleep(5)
-            feedback = self.node.destroy()
-            assert 'error' not in feedback
-            assert 'name' in feedback
-            assert 'destroyed' in feedback
-        else:
-            pass
+        # Wait for the container to be correctly started
+        time.sleep(5)
+        feedback = self.node.destroy()
+        assert 'error' not in feedback
+        assert 'name' in feedback
+        assert 'destroyed' in feedback
 
 
 class NodeFoundationTestCase(unittest.TestCase):
@@ -150,14 +134,12 @@ class NodeFoundationTestCase(unittest.TestCase):
         #assert report
         #assert report['home']
 
+    @test.docker_required
+    @test.serf_required
     def test_register_node(self):
-        if SERF_ON:
-            pass
-        else:
-            pass
+        pass
 
+    @test.docker_required
+    @test.serf_required
     def test_forget_node(self):
-        if SERF_ON:
-            pass
-        else:
-            pass
+        pass

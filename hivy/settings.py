@@ -23,3 +23,6 @@ HOOKS = {
 LOGFILE = '/tmp/hivy.log'
 LOG_FORMAT = (u'[{record.time:%m-%d %H:%M}] '
               '{record.level_name}.{record.channel} {record.message}')
+
+
+SERVER_URL = 'http://unide.co'

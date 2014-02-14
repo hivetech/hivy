@@ -6,9 +6,9 @@
 
 
 import unittest
-
+from hivy import __api__
 from hivy.app import app
-from hivy import __api__, SERF_ON
+import hivy.utils as utils
 
 
 # http://flask.pocoo.org/docs/testing/
@@ -26,7 +26,7 @@ class SystemTestCase(unittest.TestCase):
             self.assertTrue(service in res.data)
 
     def test_get_version(self):
-        if SERF_ON:
+        if utils.is_available('serf'):
             res = self.app.get('/')
             for info in ['major', 'minor', 'patch']:
                 self.assertTrue(info in res.data)
