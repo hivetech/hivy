@@ -67,7 +67,7 @@ class NodeFoundation(NodeFactory):
                      retry=retry, ip=infos['node']['virtual_ip'])
             feedback, success = \
                 self.serf.register_node(infos['node']['virtual_ip'])
-            time.sleep(3)
+            time.sleep(10)
             retry -= 1
         log.info('registered node',
                  retry=retry, ip=infos['node']['virtual_ip'],

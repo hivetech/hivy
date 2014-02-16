@@ -56,7 +56,7 @@ def requires_basic_auth(resource):
         if not auth or not check_credentials(auth.username, auth.password):
             log.warn('authentification failed', credentials=auth)
             return auth_failed()
-        log.warn('authentification succeeded', credentials=auth)
+        log.info('authentification succeeded', credentials=auth)
         return resource(*args, **kwargs)
     return decorated
 
@@ -73,6 +73,6 @@ def requires_token_auth(resource):
             log.warn('authentification failed', token=token)
             return auth_failed()
         g.user = TMP_USERS[token]
-        log.warn('authentification succeeded', token=token, user=g.user)
+        log.info('authentification succeeded', token=token, user=g.user)
         return resource(*args, **kwargs)
     return decorated

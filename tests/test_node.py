@@ -11,7 +11,7 @@ from flask.ext.testing import TestCase
 from werkzeug.datastructures import Headers
 from werkzeug.test import Client
 
-from hivy.app import app
+from hivy.core import app
 import hivy.test as test
 from hivy.node.factory import NodeFactory
 from hivy.node.foundation import NodeFoundation

@@ -7,7 +7,7 @@
 
 import unittest
 from hivy import __api__
-from hivy.app import app
+from hivy.core import app
 import hivy.utils as utils
 
 

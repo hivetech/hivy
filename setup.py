@@ -1,7 +1,12 @@
+import sys
 import os
 from setuptools import setup, find_packages
-
 from hivy import __project__, __version__, __author__, __licence__
+
+
+if sys.argv[-1] == 'test':
+    status = os.system('make tests')
+    sys.exit(1 if status > 127 else status)
 
 
 # Needs also : apt-get install swig
@@ -37,6 +42,11 @@ setup(
     license=__licence__,
     install_requires=requires,
     url="https://github.com/hivetech/hivy",
+    entry_points={
+        'console_scripts': [
+            'hivy = hivy.__main__:main',
+        ],
+    },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: Apache Software License',
@@ -48,6 +58,6 @@ setup(
         'Topic :: Software Development',
         'Topic :: System :: Shells',
     ],
-    scripts=['app/hivy', 'app/hivy-watchdog'],
-    data_files=[(os.path.expanduser('~/.hivy'), ['app/Procfile'])]
+    scripts=['scripts/hivy-watchdog'],
+    data_files=[(os.path.expanduser('~/.hivy'), ['./Procfile'])]
 )

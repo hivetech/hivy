@@ -6,7 +6,7 @@ import unittest
 import os
 import logbook
 import hivy.logger as logger
-import hivy.conf as conf
+import hivy.settings as settings
 
 
 class LoggerTestCase(unittest.TestCase):
@@ -34,7 +34,7 @@ class LoggerTestCase(unittest.TestCase):
         self.assertTrue(isinstance(
             handler, logbook.handlers.FileHandler))
         self.assertTrue(handler.level_name == 'DEBUG')
-        self.assertTrue(handler.stream.name == conf.LOGFILE)
+        self.assertTrue(handler.stream.name == settings.LOG['file'])
 
     def test_logger_custom_file_setup(self):
         custom_level = 'warning'
@@ -47,15 +47,15 @@ class LoggerTestCase(unittest.TestCase):
         self.assertTrue(handler.stream.name == custom_logfile)
 
     def test_write_log_to_file(self):
-        os.remove(conf.LOGFILE)
+        os.remove(settings.LOG['file'])
         setup = logger.setup()
         body = 'TDD is awesome'
         event_type = 'test'
         with setup.applicationbound():
             log = logger.logger()
             log.info(event_type, body=body)
-            self.assertTrue(os.path.exists(conf.LOGFILE))
-            with open(conf.LOGFILE, 'r') as fd:
+            self.assertTrue(os.path.exists(settings.LOG['file']))
+            with open(settings.LOG['file'], 'r') as fd:
                 text = fd.read()
                 for required_info in \
                         [body, event_type, 'id',

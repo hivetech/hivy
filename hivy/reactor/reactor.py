@@ -15,7 +15,7 @@ import sh
 from hivy.logger import logger
 import hivy.utils as utils
 
-log = logger('hivy.reactor.' + __name__)
+log = logger(__name__)
 
 
 class Serf(object):

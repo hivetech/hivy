@@ -17,7 +17,7 @@ __project__ = 'hivy'
 __author__ = 'Xavier Bruhiere'
 __copyright__ = 'Hive Tech, SAS'
 __licence__ = 'Apache 2.0'
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 __api__ = {
     'status': 'GET /',
     'doc': 'GET /doc',

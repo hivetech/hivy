@@ -8,6 +8,7 @@
 import os
 import unittest
 import hivy.utils as utils
+import hivy.test as test
 
 
 class UtilsTestCase(unittest.TestCase):
@@ -79,6 +80,7 @@ class UtilsTestCase(unittest.TestCase):
             new_id = utils.generate_unique_id()
             self.assertTrue(new_id != old_id)
 
+    @test.docker_required
     def test_detect_docker_available(self):
         os.environ.update({'USE_DOCKER': True})
         is_available = utils.is_available('docker')

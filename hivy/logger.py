@@ -16,6 +16,7 @@ from structlog import wrap_logger
 from structlog.processors import JSONRenderer
 import logbook
 import hivy.utils as utils
+import hivy.settings as settings
 
 
 def add_unique_id(logger_class, log_method, event):
@@ -30,15 +31,8 @@ def add_timestamp(logger_class, log_method, event_dict):
     return event_dict
 
 
-def setup(level='debug',
-          show_log=False,
-          filename='/tmp/hivy.log'):
+def setup(level='debug', show_log=False, filename=settings.LOG['file']):
     ''' Hivy formated logger '''
-
-    # FIXME Same as in hivy.settings.py but can't use them : make reactor
-    # importations fails
-    log_format = (u'[{record.time:%m-%d %H:%M}] '
-                  '{record.level_name}.{record.channel} {record.message}')
 
     level = level.upper()
     handlers = [
@@ -47,12 +41,12 @@ def setup(level='debug',
     if show_log:
         handlers.append(
             logbook.StreamHandler(sys.stdout,
-                                  format_string=log_format,
+                                  format_string=settings.LOG['format'],
                                   level=level))
     else:
         handlers.append(
             logbook.FileHandler(filename,
-                                format_string=log_format,
+                                format_string=settings.LOG['format'],
                                 level=level))
 
     return logbook.NestedSetup(handlers)
@@ -65,6 +59,6 @@ def logger(name=__name__):
         processors=[
             add_unique_id,
             add_timestamp,
-            JSONRenderer(indent=2, sort_keys=True),
+            JSONRenderer(),
         ]
     )

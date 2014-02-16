@@ -14,7 +14,7 @@
 
 import os
 import docker
-#import hivy.conf as conf
+import hivy.settings as settings
 from hivy.logger import logger
 
 log = logger(__name__)
@@ -87,9 +87,7 @@ class NodeFactory(object):
             infos = {
                 'name': self.name,
                 'ip': '{}:{}'.format(
-                    #conf.SERVER_URL,
-                    'http://unide.co',
-                    # FIXME settings.SERVER_URL,
+                    settings.SERVER_URL,
                     node['NetworkSettings']['Ports']['22/tcp'][0]['HostPort']),
                 'state': node['State'],
                 'node': {
