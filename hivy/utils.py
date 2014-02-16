@@ -11,6 +11,8 @@ import os
 import string
 import random
 import uuid
+import docker
+import requests
 from hivy import __version__
 
 
@@ -29,6 +31,7 @@ def api_url(resource):
 
 
 def is_running(process):
+    ''' `pgrep` returns an error code if no process was found '''
     try:
         pgrep = sh.Command('/usr/bin/pgrep')
         pgrep(process)
@@ -40,13 +43,32 @@ def is_running(process):
 
 def is_available(command):
     ''' Mark "command" as available if running and allowed '''
-    return (is_running(command) and
+    if command == 'docker':
+        _, status = docker_check()
+    else:
+        status = is_running(command)
+    return (status and
             os.environ.get('USE_{}'.format(command.upper())))
 
 
 def generate_random_name(size=8, chars=string.ascii_lowercase + string.digits):
     ''' Create a random name to assign to a node '''
     return ''.join(random.choice(chars) for _ in range(size))
+
+
+def docker_check():
+    docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
+    dock = docker.Client(base_url=docker_url, timeout=5)
+    try:
+        docker_version = dock.version()
+        status = True
+    except requests.ConnectionError, error:
+        docker_version = {'error': str(error)}
+        status = False
+    except requests.Timeout, error:
+        docker_version = {'error': str(error)}
+        status = False
+    return docker_version, status
 
 
 def generate_unique_id():

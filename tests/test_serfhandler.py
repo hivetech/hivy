@@ -51,7 +51,7 @@ class TestSerfHandlerNegativeCases:
 
     def test_no_handler(self):
         self.handler.run()
-        self.handler.log.assert_called_with("no handler for role")
+        self.handler.log.assert_called_with("no handler found")
 
     def test_no_method_implemented(self):
         self.handler.register('default', SerfHandler())

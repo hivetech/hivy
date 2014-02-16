@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 
@@ -6,7 +5,7 @@
   Hivy logger configuration
   -------------------------
 
-  :copyright (c) 2014 Xavier Bruhier.
+  :copyright (c) 2014 Hive Tech, SAS.
   :license: %LICENCE%, see LICENSE for more details.
 '''
 
@@ -19,12 +18,14 @@ import logbook
 import hivy.utils as utils
 
 
-def add_unique_id(logger, method_name, event):
+def add_unique_id(logger_class, log_method, event):
+    ''' Attach a unique id per event '''
     event['id'] = utils.generate_unique_id()
     return event
 
 
-def add_timestamp(logger, log_method, event_dict):
+def add_timestamp(logger_class, log_method, event_dict):
+    ''' Attach the event time, as unix epoch '''
     event_dict['timestamp'] = calendar.timegm(time.gmtime())
     return event_dict
 
@@ -35,7 +36,7 @@ def setup(level='debug',
     ''' Hivy formated logger '''
 
     # FIXME Same as in hivy.settings.py but can't use them : make reactor
-    # importations fail
+    # importations fails
     log_format = (u'[{record.time:%m-%d %H:%M}] '
                   '{record.level_name}.{record.channel} {record.message}')
 
@@ -58,6 +59,7 @@ def setup(level='debug',
 
 
 def logger(name=__name__):
+    ''' Configure and return a new logger for hivy modules '''
     return wrap_logger(
         logbook.Logger(name),
         processors=[

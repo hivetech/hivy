@@ -13,12 +13,13 @@
 
 import os
 #import sh
-import docker
 from flask.ext import restful
-
 from hivy import __api__
 import hivy.utils as utils
 import hivy.reactor.reactor as reactor
+from hivy.logger import logger
+
+log = logger(__name__)
 
 
 class Status(restful.Resource):
@@ -28,19 +29,17 @@ class Status(restful.Resource):
         self.hivy_version = utils.Version()
         self.serf = reactor.Serf()
         #self.salt = sh.Command('/usr/bin/salt-master')
-        docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
-        self.dock = docker.Client(base_url=docker_url,
-                                  version='0.7.6',
-                                  timeout=10)
 
     def get(self):
         ''' Inspect Hivy, docker, salt-master and serf states '''
+        log.info('request hivy status')
+        docker_version, docker_status = utils.docker_check()
 
         return {
             'state': {
                 'hivy': os.environ.get('HIVY_STATUS', True),
                 'sub-systems': {
-                    'docker': 'not implemeted',
+                    'docker': docker_status,
                     'salt-master': 'not implemented',
                     'serf': utils.is_available('serf')
                 }
@@ -51,7 +50,7 @@ class Status(restful.Resource):
                     'minor': self.hivy_version.minor,
                     'patch': self.hivy_version.patch
                 },
-                'docker': self.dock.version(),
+                'docker': docker_version,
                 'serf': self.serf.version(),
                 #'salt': str(self.salt('--version'))
                 'salt': 'not implemented'
@@ -64,4 +63,5 @@ class Doc(restful.Resource):
 
     def get(self):
         ''' No magic here, see hivy.__setup__.py '''
+        log.info('request hivy doc')
         return {'api': __api__}

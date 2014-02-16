@@ -1,11 +1,23 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# Copyright (C) 2014 Hive Tech, SAS.
+
+'''
+  Hivy Authentification
+  ---------------------
+
+  Methods for protecting hivy resources
+
+  :copyright (c) 2014 Hive Tech, SAS.
+  :license: %LICENCE%, see LICENSE for more details.
+'''
 
 
 from functools import wraps
 from flask import request, Response, g
+from hivy.logger import logger
+
+
+log = logger(__name__)
 
 
 TMP_USERS = {
@@ -42,7 +54,9 @@ def requires_basic_auth(resource):
         auth = request.authorization
         # auth = {'username': 'admin', 'password': 'secret'}
         if not auth or not check_credentials(auth.username, auth.password):
+            log.warn('authentification failed', credentials=auth)
             return auth_failed()
+        log.warn('authentification succeeded', credentials=auth)
         return resource(*args, **kwargs)
     return decorated
 
@@ -56,7 +70,9 @@ def requires_token_auth(resource):
         ''' Check provided token '''
         token = request.headers.get('Authorization')
         if not token or not check_token(token):
+            log.warn('authentification failed', token=token)
             return auth_failed()
         g.user = TMP_USERS[token]
+        log.warn('authentification succeeded', token=token, user=g.user)
         return resource(*args, **kwargs)
     return decorated

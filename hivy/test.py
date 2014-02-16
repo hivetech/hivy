@@ -15,7 +15,9 @@ import hivy.utils as utils
 
 
 def docker_required(function):
+    ''' Run the provided function only if we can reach the docker server '''
     def inner(*args, **kwargs):
+        ''' decorator '''
         if utils.is_available('docker'):
             return function(*args, **kwargs)
         else:
@@ -24,7 +26,9 @@ def docker_required(function):
 
 
 def serf_required(function):
+    ''' Run the provided function only if we can reach the serf cluster '''
     def inner(*args, **kwargs):
+        ''' decorator '''
         if utils.is_available('serf'):
             return function(*args, **kwargs)
         else:

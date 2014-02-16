@@ -7,7 +7,6 @@
 
 import os
 import unittest
-
 import hivy.utils as utils
 
 
@@ -79,3 +78,18 @@ class UtilsTestCase(unittest.TestCase):
             old_id = new_id
             new_id = utils.generate_unique_id()
             self.assertTrue(new_id != old_id)
+
+    def test_detect_docker_available(self):
+        os.environ.update({'USE_DOCKER': True})
+        is_available = utils.is_available('docker')
+        self.assertTrue(is_available)
+        os.environ.pop('USE_DOCKER')
+
+    def test_handle_docker_not_available(self):
+        #TODO with a wrong DOCKER_URL
+        os.environ.update({'DOCKER_URL': 'http://1.2.3.4.:4243'})
+        os.environ.update({'USE_DOCKER': True})
+        is_available = utils.is_available('docker')
+        self.assertFalse(is_available)
+        os.environ.pop('USE_DOCKER')
+        pass

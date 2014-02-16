@@ -33,7 +33,11 @@ if __name__ == '__main__':
 
     log_setup = logger.setup(level=args['--log'], show_log=args['--debug'])
     with log_setup.applicationbound():
-        log.info('Hivy ready')
+        log.info('server ready',
+                 log=args['--log'],
+                 debug=args['--debug'],
+                 bind='{}:{}'.format(args['--bind'], args['--port']))
+
         app.run(host=args['--bind'],
                 port=int(args['--port']),
                 debug=args['--debug'])

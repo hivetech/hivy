@@ -13,11 +13,11 @@ import hivy.reactor.hooks.utils as hooksutils
 ROUTES = {
     '/': system.Status,
     utils.api_url('doc'): system.Doc,
-    utils.api_url('node'): node.RestNode
+    utils.api_url('node'): node.RestfulNode
 }
 
 HOOKS = {
-    'lab': hooksutils.Debug
+    'node': hooksutils.Debug
 }
 
 LOGFILE = '/tmp/hivy.log'

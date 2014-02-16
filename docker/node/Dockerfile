@@ -42,14 +42,14 @@ RUN echo 'root:unide' | chpasswd && \
 ADD https://dl.bintray.com/mitchellh/serf/0.4.1_linux_amd64.zip serf.zip
 RUN unzip serf.zip && \
   rm serf.zip && \
-  mv serf /usr/bin/
+  mv serf /usr/local/bin/
 
 
 # -------------------------------------------------------------- #
 # ----    Startup scripts    ----------------------------------- #
 # -------------------------------------------------------------- #
-ADD ./startup-serf /usr/bin/startup-serf
-ADD ./startup-salt-minion /usr/bin/startup-salt-minion
+ADD ./startup-serf /usr/local/bin/startup-serf
+ADD ./startup-salt-minion /usr/local/bin/startup-salt-minion
 ADD ./supervisor-node.conf /etc/supervisord.conf
 
 ENTRYPOINT ["/usr/bin/supervisord"]

@@ -18,12 +18,14 @@ class SerfTestCase(unittest.TestCase):
     def setUp(self):
         self.serf = reactor.Serf()
 
+    @test.serf_required
     def test_serf_version(self):
         version = self.serf.version()
         self.assertTrue(len(version) == 2)
         self.assertTrue('Serf' in version[0])
         self.assertTrue('Agent Protocol' in version[1])
 
+    @test.serf_required
     def test_valid_serf_version(self):
         version = self.serf.version()
         minor_version = int(version[0].split('.')[1])

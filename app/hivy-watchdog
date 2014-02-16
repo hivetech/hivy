@@ -21,7 +21,7 @@ Options:
 from docopt import docopt
 
 from hivy import __version__
-import hivy.settings as settings
+import hivy.conf as conf
 from hivy.reactor.handler import SerfHandlerProxy
 
 
@@ -31,6 +31,6 @@ if __name__ == '__main__':
     print args
 
     handler = SerfHandlerProxy()
-    for role, hook in settings.HOOKS.iteritems():
+    for role, hook in conf.HOOKS.iteritems():
         handler.register(role, hook())
     handler.run()

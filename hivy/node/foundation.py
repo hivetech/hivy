@@ -17,6 +17,9 @@ import time
 import hivy.reactor.reactor as reactor
 import hivy.utils as utils
 from hivy.node.factory import NodeFactory
+from hivy.logger import logger
+
+log = logger(__name__)
 
 
 class NodeFoundation(NodeFactory):
@@ -45,6 +48,7 @@ class NodeFoundation(NodeFactory):
 
     #TODO Detection salt master ip
     def _salt_master_ip(self):
+        ''' It will be used by the created node to find its salt master '''
         return os.environ.get('SALT_MASTER_URL', 'localhost')
 
     def _check(self, servers):
@@ -53,15 +57,24 @@ class NodeFoundation(NodeFactory):
         return {'localhost': 'ok'}
 
     def register(self, retry=3):
+        '''
+        Contact the node to make it to join the serf cluster so we can track it
+        '''
         infos = self.inspect()
         success = False
         while retry and not success:
+            log.info('trying to register node',
+                     retry=retry, ip=infos['node']['virtual_ip'])
             feedback, success = \
                 self.serf.register_node(infos['node']['virtual_ip'])
             time.sleep(3)
             retry -= 1
+        log.info('registered node',
+                 retry=retry, ip=infos['node']['virtual_ip'],
+                 success=success, feedback=feedback)
         return feedback, success
 
     def forget(self):
+        ''' Tell the serf cluster the node has left '''
         infos = self.inspect()
         return self.serf.unregister_node(infos['node']['virtual_ip'])

@@ -26,7 +26,7 @@ $ (sudo) pip install hivy
 
 $ # Default settings use local docker server (using default unix sockets)
 $ # But you can tell hivy to use another one
-$ export DOCKER_URL="http://172.0.1.17:1234"
+$ export DOCKER_URL="http://172.0.1.17:4243"
 $ # In the same manner, you can use a custom image
 $ export NODE_IMAGE=my/image
 ```
