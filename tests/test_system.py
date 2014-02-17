@@ -8,7 +8,6 @@
 import unittest
 from hivy import __api__
 from hivy.core import app
-import hivy.utils as utils
 
 
 # http://flask.pocoo.org/docs/testing/
@@ -26,14 +25,11 @@ class SystemTestCase(unittest.TestCase):
             self.assertTrue(service in res.data)
 
     def test_get_version(self):
-        if utils.is_available('serf'):
-            res = self.app.get('/')
-            for info in ['major', 'minor', 'patch']:
-                self.assertTrue(info in res.data)
-            for service in ['docker', 'salt', 'serf']:
-                self.assertTrue(service in res.data)
-        else:
-            pass
+        res = self.app.get('/')
+        for info in ['major', 'minor', 'patch']:
+            self.assertTrue(info in res.data)
+        for service in ['docker', 'salt', 'serf']:
+            self.assertTrue(service in res.data)
 
     def test_get_v0_doc(self):
         res = self.app.get('/v0/doc')

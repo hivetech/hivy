@@ -54,6 +54,9 @@ curl http://0.0.0.0:5000/v0/doc
 # Create a new environment
 curl -X POST -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/v0/node
 
+# Get some feedback
+curl -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/v0/node
+
 # Destroy it
 curl -X DELETE -H "Authorization:<ACCESS_TOKEN>" http://0.0.0.0:5000/v0/node
 ```
@@ -62,7 +65,7 @@ Tests
 -----
 
 ```console
-$ Make tests
+$ make tests
 
 $ # If docker is installed, you can test node interactions as well
 $ USE_DOCKER=true make tests

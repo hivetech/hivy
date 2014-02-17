@@ -1,18 +1,28 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 
-'''
-  Hivy Flask app
-  --------------
+'''Hivy
 
-  :copyright (c) 2014 Hive Tech, SAS.
-  :license: %LICENCE%, see LICENSE for more details.
+Usage:
+  hivy -h | --help
+  hivy --version
+  hivy [--bind=<ip>] [--port=<port>] [-d | --debug] [--log <level>]
+
+Options:
+  -h --help       Show this screen.
+  --version       Show version.
+  --debug         Activates Flask debug
+  --bind=<ip>     Listens on the given ip [default: 127.0.0.1]
+  --port=<port>   Listens on the given port [default: 5000]
+  --log=<level>   Log output level [default: debug]
 '''
 
 
 from flask import Flask
 from flask.ext import restful
 import os
+from docopt import docopt
+from hivy import __version__
 import hivy.conf as conf
 import hivy.logger as logger
 
@@ -31,7 +41,8 @@ for endpoint, resource in conf.ROUTES.iteritems():
     api.add_resource(resource, endpoint)
 
 
-def main(args):
+def main():
+    args = docopt(__doc__, version='Hivy, Hive api {}'.format(__version__))
     try:
         log_setup = logger.setup(level=args['--log'], show_log=args['--debug'])
         with log_setup.applicationbound():

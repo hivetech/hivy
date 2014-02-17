@@ -4,7 +4,6 @@
 # VERSION 0.1.0
 
 # Administration
-# hivetech/pyscience is an ubuntu 13.10 image with most popular python packages
 FROM quay.io/hackliff/node
 MAINTAINER Xavier Bruhiere <xavier.bruhiere@gmail.com>
 
@@ -26,6 +25,8 @@ RUN git clone --branch develop --depth 1 https://github.com/hivetech/hivy.git &&
   python setup.py install
 
 ENV NODE_ID hivy
+ENV NODE_ROLE master
+ADD ./startup-serf /usr/local/bin/startup-serf
 ADD ./supervisor-hivy.conf /etc/supervisord.conf
 
 ENTRYPOINT ["/usr/bin/supervisord"]

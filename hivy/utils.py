@@ -41,16 +41,6 @@ def is_running(process):
     return flag
 
 
-def is_available(command):
-    ''' Mark "command" as available if running and allowed '''
-    if command == 'docker':
-        _, status = docker_check()
-    else:
-        status = is_running(command)
-    return (status and
-            os.environ.get('USE_{}'.format(command.upper())))
-
-
 def generate_random_name(size=8, chars=string.ascii_lowercase + string.digits):
     ''' Create a random name to assign to a node '''
     return ''.join(random.choice(chars) for _ in range(size))

@@ -41,7 +41,7 @@ class Status(restful.Resource):
                 'sub-systems': {
                     'docker': docker_status,
                     'salt-master': 'not implemented',
-                    'serf': utils.is_available('serf')
+                    'serf': utils.is_running('serf')
                 }
             },
             'version': {

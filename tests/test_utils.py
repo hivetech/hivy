@@ -5,10 +5,9 @@
 # Copyright (C) 2014 Hive Tech, SAS.
 
 
-import os
 import unittest
 import hivy.utils as utils
-import hivy.test as test
+#import hivy.test as test
 
 
 class UtilsTestCase(unittest.TestCase):
@@ -40,27 +39,6 @@ class UtilsTestCase(unittest.TestCase):
     def test_not_running_process_detection(self):
         self.assertFalse(utils.is_running('no_chance_this_program_is_running'))
 
-    def test_subsystem_available_and_allowed(self):
-        os.environ.update({'USE_{}'.format(
-            self.always_running_process.upper()): True})
-        is_available = utils.is_available(self.always_running_process)
-        self.assertTrue(is_available)
-        os.environ.pop('USE_{}'.format(self.always_running_process.upper()))
-
-    def test_subsystem_available_but_not_allowed(self):
-        is_available = utils.is_available(self.always_running_process)
-        self.assertFalse(is_available)
-
-    def test_subsystem_not_available_and_not_allowed(self):
-        is_available = utils.is_available('program_not_running')
-        self.assertFalse(is_available)
-
-    def test_subsystem_not_available_but_allowed(self):
-        os.environ.update({'USE_PROGRAM_NOT_RUNNING': True})
-        is_available = utils.is_available('program_not_running')
-        self.assertFalse(is_available)
-        os.environ.pop('USE_PROGRAM_NOT_RUNNING')
-
     def test_generate_name(self):
         new_name = utils.generate_random_name()
         #TODO Regex validation
@@ -79,19 +57,3 @@ class UtilsTestCase(unittest.TestCase):
             old_id = new_id
             new_id = utils.generate_unique_id()
             self.assertTrue(new_id != old_id)
-
-    @test.docker_required
-    def test_detect_docker_available(self):
-        os.environ.update({'USE_DOCKER': True})
-        is_available = utils.is_available('docker')
-        self.assertTrue(is_available)
-        os.environ.pop('USE_DOCKER')
-
-    def test_handle_docker_not_available(self):
-        #TODO with a wrong DOCKER_URL
-        os.environ.update({'DOCKER_URL': 'http://1.2.3.4.:4243'})
-        os.environ.update({'USE_DOCKER': True})
-        is_available = utils.is_available('docker')
-        self.assertFalse(is_available)
-        os.environ.pop('USE_DOCKER')
-        pass
