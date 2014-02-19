@@ -12,10 +12,10 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
-import os
 import time
 import hivy.reactor.reactor as reactor
 import hivy.utils as utils
+from hivy.genetics.saltstack import Saltstack
 from hivy.node.factory import NodeFactory
 from hivy.logger import logger
 
@@ -34,27 +34,16 @@ class NodeFoundation(NodeFactory):
       - root_dir: /home/username
     '''
 
-    #local = salt.client.LocalClient()
-
     def __init__(self, image, name=None, role='node'):
         name = name or utils.generate_random_name()
         NodeFactory.__init__(self, image, name, role)
 
-        self.environment.update({
-            'SALT_MASTER': self._salt_master_ip(),
-        })
-
         self.serf = reactor.Serf()
+        self.state = Saltstack()
 
-    #TODO Detection salt master ip
-    def _salt_master_ip(self):
-        ''' It will be used by the created node to find its salt master '''
-        return os.environ.get('SALT_MASTER_URL', 'localhost')
-
-    def _check(self, servers):
-        ''' Check if servers are up '''
-        #return self.local.cmd(servers, 'test.ping')
-        return {'localhost': 'ok'}
+        self.environment.update({
+            'SALT_MASTER': self.state._master_ip(),
+        })
 
     def register(self, retry=3):
         '''
@@ -78,3 +67,9 @@ class NodeFoundation(NodeFactory):
         ''' Tell the serf cluster the node has left '''
         infos = self.inspect()
         return self.serf.unregister_node(infos['node']['virtual_ip'])
+
+    def synthetize(self, profile, gene, data={}):
+        self.state.switch_context(profile, self.name)
+        self.state.store_data(profile, data)
+        cmd = 'state.sls' if gene in self.state.library else 'cmd.run'
+        return self.state._run([cmd], self.name, args=[[gene]])

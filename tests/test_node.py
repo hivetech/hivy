@@ -23,7 +23,7 @@ class RestfulNodeTestCase(TestCase):
     default_user = 'chuck'
     invalid_test_token = '4321'
     valid_test_token = 'd2a879423e53ddbb6788bbc286647a793440f3db'
-    node_resource_path = '/v0/node'
+    node_resource_path = '/v0/node/node'
 
     def create_app(self):
         app.config['TESTING'] = True
@@ -128,12 +128,6 @@ class NodeFoundationTestCase(unittest.TestCase):
         self.node = NodeFoundation(
             self.image_test, self.name_test, self.role_test)
 
-    # Avoiding salt dependency for now
-    #def test_check(self):
-        #report = self.node.check(self.servers_test)
-        #assert report
-        #assert report['home']
-
     @test.docker_required
     @test.serf_required
     def test_register_node(self):
@@ -142,4 +136,8 @@ class NodeFoundationTestCase(unittest.TestCase):
     @test.docker_required
     @test.serf_required
     def test_forget_node(self):
+        pass
+
+    @test.salt_required
+    def test_synthetize(self):
         pass

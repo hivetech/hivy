@@ -21,7 +21,7 @@ log = logger(__name__)
 
 
 TMP_USERS = {
-    'd2a879423e53ddbb6788bbc286647a793440f3db': 'chuck',
+    'd2a879423e53ddbb6788bbc286647a793440f3db': 'hackliff',
     'd5b4596e477eab637a5b5177333ba17440287bb5': 'gekko',
     '22d047ebaedc0149ea6f1737d4a0ecac513451cf': 'johny'}
 

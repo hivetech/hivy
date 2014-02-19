@@ -43,9 +43,10 @@ for endpoint, resource in conf.ROUTES.iteritems():
 
 def main():
     args = docopt(__doc__, version='Hivy, Hive api {}'.format(__version__))
-    try:
-        log_setup = logger.setup(level=args['--log'], show_log=args['--debug'])
-        with log_setup.applicationbound():
+    exit_status = 0
+    log_setup = logger.setup(level=args['--log'], show_log=args['--debug'])
+    with log_setup.applicationbound():
+        try:
             #TODO if utils.check_subsystems():
             log.info('server ready',
                      log=args['--log'],
@@ -55,15 +56,14 @@ def main():
             app.run(host=args['--bind'],
                     port=int(args['--port']),
                     debug=args['--debug'])
-            exit_status = 0
 
-    except Exception as error:
-        if args['--debug']:
-            raise
-        log.error('%s: %s', type(error).__name__, str(error))
-        exit_status = 1
+        except Exception as error:
+            if args['--debug']:
+                raise
+            log.error('{}: {}'.format(type(error).__name__, str(error)))
+            exit_status = 1
 
-    finally:
-        log.info('session ended with status {}'.format(exit_status))
+        finally:
+            log.info('session ended with status {}'.format(exit_status))
 
     return exit_status

@@ -38,6 +38,17 @@ def serf_required(function):
     return inner
 
 
+def salt_required(function):
+    ''' Run the provided function only if we can reach the salt master '''
+    def inner(*args, **kwargs):
+        ''' decorator '''
+        if utils.is_running('salt-master') and is_allowed('salt'):
+            return function(*args, **kwargs)
+        else:
+            pass
+    return inner
+
+
 def is_allowed(command):
     ''' Mark "command" as available if running and allowed '''
     return os.environ.get('USE_{}'.format(command.upper()))

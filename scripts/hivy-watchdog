@@ -10,27 +10,47 @@
 Usage:
   hivy-watchdog -h | --help
   hivy-watchdog -h | --help
-  hivy-watchdog
+  hivy-watchdog [--log <level>]
 
 Options:
   -h --help       Show this screen.
   --version       Show version.
+  --log=<level>   Log output level [default: debug]
 '''
 
 
 from docopt import docopt
-
+import sys
 from hivy import __version__
 import hivy.conf as conf
 from hivy.reactor.handler import SerfHandlerProxy
+import hivy.logger as logger
+
+log = logger.logger(__name__)
+
+
+def main():
+    args = docopt(
+        __doc__,
+        version='Hivy-watchdog, hooks handler %s'.format(__version__))
+    exit_status = 0
+    log_setup = logger.setup(level=args['--log'])
+    with log_setup.applicationbound():
+        try:
+            handler = SerfHandlerProxy()
+            for role, hook in conf.HOOKS.iteritems():
+                handler.register(role, hook())
+            handler.run()
+
+        except Exception as error:
+            log.error('{}: {}'.format(type(error).__name__, str(error)))
+            exit_status = 1
+
+        finally:
+            log.info('Hooks ended with status {}'.format(exit_status))
+
+    return exit_status
 
 
 if __name__ == '__main__':
-    args = docopt(
-        __doc__, version='Hivy-watchdog, hooks handler %s'.format(__version__))
-    print args
-
-    handler = SerfHandlerProxy()
-    for role, hook in conf.HOOKS.iteritems():
-        handler.register(role, hook())
-    handler.run()
+    sys.exit(main())

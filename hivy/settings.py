@@ -5,8 +5,8 @@
   settings
   --------
 
-  :copyright (c) 2014 Xavier Bruhier.
-  :license: %LICENCE%, see LICENSE for more details.
+  :copyright (c) 2014 Hive Tech, SAS.
+  :license: Apache 2.0, see LICENSE for more details.
 '''
 
 
@@ -16,4 +16,6 @@ LOG = {
                '{record.level_name} {record.channel} {record.message}')
 }
 
-SERVER_URL = 'http://unide.co'
+SERVER_URL = 'http://api.unide.co'
+
+GENES = ['debug']

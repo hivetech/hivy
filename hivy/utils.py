@@ -9,6 +9,7 @@
 import sh
 import os
 import string
+import yaml
 import random
 import uuid
 import docker
@@ -64,3 +65,9 @@ def docker_check():
 def generate_unique_id():
     event_id = uuid.uuid4().get_urn()
     return event_id.split(':')[-1]
+
+
+def write_yaml_data(filepath, data):
+    ''' Dump a dictionnary into a file as yaml '''
+    with open(filepath, 'w') as yaml_fd:
+        yaml_fd.write(yaml.dump(data))

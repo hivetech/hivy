@@ -47,16 +47,17 @@ class NodeFactory(object):
     def activate(self):
         ''' Create a new docker container from an existing image '''
         try:
+            ports = {22: None}
             feedback = self.dock.create_container(
                 self.image,
                 detach=True,
                 hostname=self.name,
                 name=self.name,
-                ports=[22],
+                ports=ports.keys(),
                 environment=self.environment
             )
             feedback.update({'name': self.name})
-            self.dock.start(feedback['Id'], port_bindings={22: None})
+            self.dock.start(feedback['Id'], port_bindings=ports)
             log.info('activated node',
                      image=self.image, name=self.name,
                      env=self.environment, feedback=feedback)
