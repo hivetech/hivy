@@ -12,10 +12,10 @@
 '''
 
 import sh
-from hivy.logger import logger
+import dna.logging
 import hivy.utils as utils
 
-log = logger(__name__)
+log = dna.logging.logger(__name__)
 
 
 class Serf(object):

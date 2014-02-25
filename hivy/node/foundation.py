@@ -17,9 +17,9 @@ import hivy.reactor.reactor as reactor
 import hivy.utils as utils
 from hivy.genetics.saltstack import Saltstack
 from hivy.node.factory import NodeFactory
-from hivy.logger import logger
+import dna.logging
 
-log = logger(__name__)
+log = dna.logging.logger(__name__)
 
 
 class NodeFoundation(NodeFactory):
@@ -66,7 +66,10 @@ class NodeFoundation(NodeFactory):
     def forget(self):
         ''' Tell the serf cluster the node has left '''
         infos = self.inspect()
-        return self.serf.unregister_node(infos['node']['virtual_ip'])
+        feedback = self.serf.unregister_node(infos['node']['virtual_ip'])
+        # TODO Wait for serf to aknowledge (experimental)
+        time.sleep(10)
+        return feedback
 
     def synthetize(self, profile, gene, data={}):
         self.state.switch_context(profile, self.name)

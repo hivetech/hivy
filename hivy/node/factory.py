@@ -15,9 +15,9 @@
 import os
 import docker
 import hivy.settings as settings
-from hivy.logger import logger
+import dna.logging
 
-log = logger(__name__)
+log = dna.logging.logger(__name__)
 
 
 class NodeFactory(object):

@@ -14,19 +14,21 @@
 import os
 #import sh
 from flask.ext import restful
-from hivy import __api__
+import dna.logging
+import dna.utils
+from hivy import __version__
 import hivy.utils as utils
 import hivy.reactor.reactor as reactor
-from hivy.logger import logger
+from hivy.resources.node import RestfulNode
 
-log = logger(__name__)
+log = dna.logging.logger(__name__)
 
 
 class Status(restful.Resource):
     ''' Expose Hivy services states and versions '''
 
     def __init__(self):
-        self.hivy_version = utils.Version()
+        self.hivy_version = dna.utils.Version(__version__)
         self.serf = reactor.Serf()
         #self.salt = sh.Command('/usr/bin/salt-master')
 
@@ -64,4 +66,13 @@ class Doc(restful.Resource):
     def get(self):
         ''' No magic here, see hivy.__setup__.py '''
         log.info('request hivy doc')
-        return {'api': __api__}
+        return {
+            'api': {
+                'GET /': Status.__doc__,
+                utils.api_doc('doc', 'GET'): Doc.__doc__,
+                utils.api_doc(
+                    'node/<string:image>',
+                    'GET | POST | DELETE',
+                    cpu=2, ram=512): RestfulNode.__doc__
+            }
+        }

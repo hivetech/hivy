@@ -28,13 +28,6 @@ class UtilsTestCase(unittest.TestCase):
         self.assertTrue(sub_version >= 0)
         self.assertTrue(sub_version < 10)
 
-    def test_hivy_version_object(self):
-        version = utils.Version()
-
-        self._check_sub_version(version.major)
-        self._check_sub_version(version.minor)
-        self._check_sub_version(version.patch)
-
     def test_running_process_detection(self):
         self.assertTrue(utils.is_running(self.always_running_process))
 

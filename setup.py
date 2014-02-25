@@ -11,6 +11,7 @@ if sys.argv[-1] == 'test':
 
 # Needs also : apt-get install swig
 requires = [
+    'dna>=0.0.2',
     'Flask-RESTful>=0.2.11',
     'docopt>=0.6.1',
     'itsdangerous>=0.23',

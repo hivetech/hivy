@@ -12,14 +12,15 @@
 '''
 
 
+import time
 import flask
 from flask.ext import restful
 from flask.ext.restful import reqparse
 import hivy.auth as auth
 from hivy.node.foundation import NodeFoundation
-from hivy.logger import logger
+import dna.logging
 
-log = logger(__name__)
+log = dna.logging.logger(__name__)
 
 
 class RestfulNode(restful.Resource):
@@ -54,6 +55,8 @@ class RestfulNode(restful.Resource):
         node = NodeFoundation(self._image_name(image), self._node_name(image))
         feedback = node.activate()
         # Wait for the node to boot
+        # TODO Replace below by node.wait_boot()
+        time.sleep(10)
         registration, success = node.register()
         feedback.update({
             'registration': {

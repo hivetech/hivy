@@ -16,9 +16,9 @@ import os
 import salt.client
 import salt.config
 import hivy.utils as utils
-from hivy.logger import logger
+import dna.logging
 
-log = logger(__name__)
+log = dna.logging.logger(__name__)
 
 
 class Saltstack(object):

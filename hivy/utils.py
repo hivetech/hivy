@@ -14,21 +14,22 @@ import random
 import uuid
 import docker
 import requests
+import dna.utils
 from hivy import __version__
-
-
-class Version(object):
-    ''' Provide a convenient way to manipulate version '''
-    def __init__(self):
-        _version = __version__.split('.')
-        self.major = int(_version[0])
-        self.minor = int(_version[1])
-        self.patch = int(_version[2])
 
 
 def api_url(resource):
     ''' Harmonize api endpoints '''
-    return '/v{}/{}'.format(Version().major, resource)
+    return '/v{}/{}'.format(dna.utils.Version(__version__).major, resource)
+
+
+def api_doc(resource, method='GET', **kwargs):
+    ''' Harmonize api endpoints '''
+    doc = '{} {}'.format(method, api_url(resource))
+    params = '&'.join(['{}={}'.format(k, v) for k, v in kwargs.iteritems()])
+    if params:
+        doc = '?'.join([doc, params])
+    return doc
 
 
 def is_running(process):

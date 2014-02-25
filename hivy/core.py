@@ -24,9 +24,9 @@ import os
 from docopt import docopt
 from hivy import __version__
 import hivy.conf as conf
-import hivy.logger as logger
+import dna.logging as logging
 
-log = logger.logger(__name__)
+log = logging.logger(__name__)
 
 
 app = Flask(__name__)
@@ -36,15 +36,20 @@ app.config.update(
     ENV=os.environ.get('APP_ENV', 'development')
 )
 
+from raven.contrib.flask import Sentry
+sentry_dns = os.environ.get('SENTRY_DNS')
+if sentry_dns:
+    _ = Sentry(app, dsn=sentry_dns)
+
 api = restful.Api(app)
 for endpoint, resource in conf.ROUTES.iteritems():
     api.add_resource(resource, endpoint)
 
 
 def main():
-    args = docopt(__doc__, version='Hivy, Hive api {}'.format(__version__))
     exit_status = 0
-    log_setup = logger.setup(level=args['--log'], show_log=args['--debug'])
+    args = docopt(__doc__, version='Hivy, Hive api {}'.format(__version__))
+    log_setup = logging.setup(level=args['--log'], show_log=args['--debug'])
     with log_setup.applicationbound():
         try:
             #TODO if utils.check_subsystems():

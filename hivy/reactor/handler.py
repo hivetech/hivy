@@ -13,10 +13,10 @@
 
 
 import os
-from hivy.logger import logger
+import dna.logging
 
 
-log = logger('hivy.reactor.' + __name__)
+log = dna.logging.logger(__name__)
 
 
 class SerfHandler(object):

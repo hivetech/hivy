@@ -14,10 +14,10 @@
 
 from functools import wraps
 from flask import request, Response, g
-from hivy.logger import logger
+import dna.logging
 
 
-log = logger(__name__)
+log = dna.logging.logger(__name__)
 
 
 TMP_USERS = {

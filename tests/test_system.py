@@ -6,7 +6,6 @@
 
 
 import unittest
-from hivy import __api__
 from hivy.core import app
 
 
@@ -33,4 +32,5 @@ class SystemTestCase(unittest.TestCase):
 
     def test_get_v0_doc(self):
         res = self.app.get('/v0/doc')
-        assert res.data == '{"api": %s}' % str(__api__).replace('\'', '"')
+        for field in ['doc', 'api', 'node']:
+            self.assertIn(field, res.data)
