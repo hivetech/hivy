@@ -23,8 +23,8 @@ class SaltTestCase(unittest.TestCase):
         self.salt = Saltstack()
 
     @test.salt_required
-    def test_cmd_run(self):
-        result = self.salt._run('test.ping', self.minion_name_test)
+    def test_cmd_call(self):
+        result = self.salt.call('test.ping', self.minion_name_test)
         self.assertTrue(result == {self.minion_name_test: True})
 
     @test.salt_required
@@ -44,7 +44,7 @@ class SaltTestCase(unittest.TestCase):
     @test.salt_required
     def test_debug_state(self):
         #FIXME cannot remove /tmp/hivy directory and date_* files
-        result = self.salt._run(
+        result = self.salt.call(
             'state.sls', self.minion_name_test, ['debug'])
         self.assertTrue(os.path.exists('/tmp/date_csv.csv'))
         self.assertTrue(os.path.exists('/tmp/hivy'))
@@ -73,8 +73,3 @@ class SaltTestCase(unittest.TestCase):
         with open(pillar_file, 'r') as pillar_fd:
             content = yaml.load(pillar_fd.read())
         self.assertTrue(content['hello'] == 'world')
-
-    def test_detect_master_ip(self):
-        # TODO Should be equal to local ip
-        ip = self.salt._master_ip()
-        self.assertTrue(ip)

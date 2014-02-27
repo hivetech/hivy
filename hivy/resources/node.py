@@ -12,15 +12,46 @@
 '''
 
 
+import os
+import docker
 import time
 import flask
 from flask.ext import restful
-from flask.ext.restful import reqparse
 import hivy.auth as auth
+import hivy.utils as utils
 from hivy.node.foundation import NodeFoundation
 import dna.logging
 
 log = dna.logging.logger(__name__)
+
+
+class Fleet(restful.Resource):
+    ''' User nodes organization as a restful resource '''
+
+    method_decorators = [auth.requires_token_auth]
+
+    def __init__(self):
+        docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
+        self.dock = docker.Client(
+            base_url=docker_url, version='0.7.6', timeout=10)
+
+    def get(self):
+        ''' Provide nodes fleet overview '''
+        # TODO Limited to user nodes
+        report = {}
+        nodes = self.dock.containers()
+        for node in nodes:
+            report[node['Names'][0]] = {
+                'created': node['Created'],
+                'image': node['Image'],
+                'status': node['Status'],
+                'network': {}
+            }
+            for port in node['Ports']:
+                report[node['Names'][0]]['network'][port['PublicPort']] = \
+                    '{}://{}:{}'.format(
+                        port['Type'], port['IP'], port['PrivatePort'])
+        return report
 
 
 class RestfulNode(restful.Resource):
@@ -82,10 +113,12 @@ class RestfulNode(restful.Resource):
 
     def put(self, image):
         ''' Manipulate the given node '''
-        parser = reqparse.RequestParser()
-        parser.add_argument('gene', type=str)
-        args = parser.parse_args()
-
         node = NodeFoundation(self._image_name(image), self._node_name(image))
-        result = node.synthetize(flask.g.get('user'), args.get('gene', ''), {})
-        return result
+        results = {}
+        if not flask.request.json or not 'gene' in flask.request.json:
+            flask.abort(400)
+
+        genes, data = utils.clean_request_data(flask.request.get_json())
+        for gene in genes:
+            results[gene] = node.synthetize(flask.g.get('user'), gene, data)
+        return results

@@ -21,6 +21,7 @@ import hivy.reactor.hooks.utils as hooksutils
 ROUTES = {
     '/': system.Status,
     utils.api_url('doc'): system.Doc,
+    utils.api_url('node'): node.Fleet,
     utils.api_url('node/<string:image>'): node.RestfulNode
 }
 

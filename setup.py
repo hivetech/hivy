@@ -17,10 +17,12 @@ requires = [
     'itsdangerous>=0.23',
     'pytz>=2013.9',
     'salt>=0.17.5',
+    'salt>=2014.1.0',
+    'blinker>=1.3',
     'sh>=1.09',
     'Logbook>=0.6.0',
     'structlog>=0.4.1',
-    'docker-py>=0.2.3']
+    'docker-py>=0.3.0']
 
 
 def long_description():

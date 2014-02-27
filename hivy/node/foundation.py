@@ -42,7 +42,7 @@ class NodeFoundation(NodeFactory):
         self.state = Saltstack()
 
         self.environment.update({
-            'SALT_MASTER': self.state._master_ip(),
+            'SALT_MASTER': self.state.ip,
         })
 
     def register(self, retry=3):
@@ -66,13 +66,11 @@ class NodeFoundation(NodeFactory):
     def forget(self):
         ''' Tell the serf cluster the node has left '''
         infos = self.inspect()
-        feedback = self.serf.unregister_node(infos['node']['virtual_ip'])
-        # TODO Wait for serf to aknowledge (experimental)
-        time.sleep(10)
-        return feedback
+        return self.serf.unregister_node(infos['node']['virtual_ip'])
 
     def synthetize(self, profile, gene, data={}):
+        ''' Apply the given saltstack state on the current image '''
         self.state.switch_context(profile, self.name)
         self.state.store_data(profile, data)
         cmd = 'state.sls' if gene in self.state.library else 'cmd.run'
-        return self.state._run([cmd], self.name, args=[[gene]])
+        return self.state.call([cmd], self.name, args=[[gene]])

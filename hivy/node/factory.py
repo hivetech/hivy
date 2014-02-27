@@ -13,6 +13,7 @@
 '''
 
 import os
+import abc
 import docker
 import hivy.settings as settings
 import dna.logging
@@ -22,10 +23,12 @@ log = dna.logging.logger(__name__)
 
 class NodeFactory(object):
     '''
-    Basic primitive of the infrastructure.
+    Basic abstract primitive of the infrastructure.
     Nodes are basically containers with high level methods for abstraction and
     easy management.
     '''
+
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, image, name, role):
         log.info('initiating node', image=image, name=name, role=role)

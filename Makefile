@@ -12,6 +12,8 @@ package:
 	python setup.py sdist upload
 
 tests: warn_missing_linters
+	#TODO Fail if outdated
+	piprot --outdated requirements.txt dev-requirements.txt
 	flake8 tests hivy
 	nosetests -w tests --with-yanc --with-coverage --cover-package=hivy
 
