@@ -13,6 +13,7 @@
 '''
 
 import time
+import docker
 import hivy.reactor.reactor as reactor
 import hivy.utils as utils
 from hivy.genetics.saltstack import Saltstack
@@ -42,7 +43,7 @@ class NodeFoundation(NodeFactory):
         self.state = Saltstack()
 
         self.environment.update({
-            'SALT_MASTER': self.state.ip,
+            'SALT_MASTER': self.state.master_ip,
         })
 
     def register(self, retry=3):
@@ -66,7 +67,13 @@ class NodeFoundation(NodeFactory):
     def forget(self):
         ''' Tell the serf cluster the node has left '''
         infos = self.inspect()
-        return self.serf.unregister_node(infos['node']['virtual_ip'])
+        if 'error' in infos:
+            feedback = infos
+            success = False
+        else:
+            feedback, success = self.serf.unregister_node(
+                infos['node']['virtual_ip'])
+        return feedback, success
 
     def synthetize(self, profile, gene, data={}):
         ''' Apply the given saltstack state on the current image '''
@@ -74,3 +81,26 @@ class NodeFoundation(NodeFactory):
         self.state.store_data(profile, data)
         cmd = 'state.sls' if gene in self.state.library else 'cmd.run'
         return self.state.call([cmd], self.name, args=[[gene]])
+
+    def discover(self, link_name):
+        ''' Search for the given service and update its environment with
+        connection informations '''
+        try:
+            link_node = self.dock.inspect_container(link_name)
+        except docker.APIError, error:
+            log.error('failed to discover link', error=error)
+            return
+
+        link_name = link_name.upper()
+        self.environment.update({
+            '{}_HOST'.format(link_name):
+            link_node['NetworkSettings']['IPAddress'],
+            '{}_PORTS_EXPOSED'.format(link_name):
+            ','.join(map(lambda x: x.split('/')[0],
+                         link_node['NetworkSettings']['Ports'].keys()))
+        })
+        for port_spec in link_node['NetworkSettings']['Ports']:
+            port = port_spec.split('/')[0]
+            self.environment.update({
+                '{}_PORT_{}'.format(link_name, port): port
+            })

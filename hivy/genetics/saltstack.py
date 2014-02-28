@@ -22,6 +22,12 @@ import dna.utils
 log = dna.logging.logger(__name__)
 
 
+def version():
+    ''' Inspect salt and its dependencies versions '''
+    return {sub_salt: sub_version
+            for sub_salt, sub_version in salt.version.versions_information()}
+
+
 class Saltstack(object):
     ''' Hivy interface to Saltstack. It uses it to manipulate images '''
 
@@ -35,14 +41,8 @@ class Saltstack(object):
         # If not found, salt will check at the default location
         self.config = salt.config.master_config(os.environ.get('SALT_CONFIG'))
         self.root_data = os.environ.get('SALT_DATA', '/srv')
-        self.ip = dna.utils.self_ip()
-        log.info('salt client ready', ip=self.ip)
-
-    def version(self):
-        details = {}
-        for k, v in salt.version.versions_information():
-            details[k] = v
-        return details
+        self.master_ip = dna.utils.self_ip()
+        log.info('salt client ready', ip=self.master_ip)
 
     def check(self):
         ''' Test the connection with the master '''

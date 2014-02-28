@@ -29,6 +29,7 @@ class NodeFactory(object):
     '''
 
     __metaclass__ = abc.ABCMeta
+    builtin_ports = {22: None}
 
     def __init__(self, image, name, role):
         log.info('initiating node', image=image, name=name, role=role)
@@ -47,20 +48,21 @@ class NodeFactory(object):
         self.dock = docker.Client(
             base_url=docker_url, version='0.7.6', timeout=10)
 
-    def activate(self):
+    def activate(self, ports=[]):
         ''' Create a new docker container from an existing image '''
         try:
-            ports = {22: None}
+            exposed_ports = self.builtin_ports
+            exposed_ports.update({port: None for port in ports})
             feedback = self.dock.create_container(
                 self.image,
                 detach=True,
                 hostname=self.name,
                 name=self.name,
-                ports=ports.keys(),
+                ports=exposed_ports.keys(),
                 environment=self.environment
             )
             feedback.update({'name': self.name})
-            self.dock.start(feedback['Id'], port_bindings=ports)
+            self.dock.start(feedback['Id'], port_bindings=exposed_ports)
             log.info('activated node',
                      image=self.image, name=self.name,
                      env=self.environment, feedback=feedback)

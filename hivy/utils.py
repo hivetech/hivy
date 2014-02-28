@@ -77,11 +77,16 @@ def write_yaml_data(filepath, data):
 
 
 def clean_request_data(request_data):
+    ''' Make sure data dict is utf-8 encoded '''
     data = {}
     genes = map(lambda x: x.encode('utf-8'), request_data.pop('gene'))
 
-    for key, value in request_data.iteritems():
-        data[key.encode('utf-8')] = \
-            map(lambda x: x.encode('utf-8'), value) \
+    data = {key.encode('utf-8'):
+            map(lambda x: x.encode('utf-8'), value)
             if isinstance(value, list) else value.encode('utf-8')
+            for key, value in request_data.iteritems()}
+    #for key, value in request_data.iteritems():
+        #data[key.encode('utf-8')] = \
+            #map(lambda x: x.encode('utf-8'), value) \
+            #if isinstance(value, list) else value.encode('utf-8')
     return genes, data

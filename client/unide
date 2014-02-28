@@ -1,0 +1,133 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim:fenc=utf-8
+#
+# Copyright (C) 2014 Hive Tech, SAS.
+
+
+'''Unide
+
+Usage:
+  unide -h | --help
+  unide --version
+  unide doc
+  unide ssh
+  unide state [--api-key=<key>] [--node=<node>]
+  unide apply --node=<node> --gene=<gene>... [--data=<data>] --api-key=<key>
+  unide up --node=<node> --api-key=<key> [--link=<name>...] [--port=<num>...]
+  unide destroy --node=<node> --api-key=<key>
+
+Options:
+  -h --help           Show this screen.
+  --version           Show version.
+  --api-key=<key>     User token for authentification
+  --node=<node>       Node name the subcommand should focus on [default: hivy]
+  --gene=<gene>       Configuration gene to apply on the given node
+  --data=<data>       Json keys:values to use with the genes [default: {}]
+  --link=<name>       Services to link to the node
+  --port=<num>        Node port to expose
+'''
+
+
+import sys
+import json
+import requests
+from docopt import docopt
+
+
+api_version = 'v0'
+unide_url = 'http://127.0.0.1:5000'
+#unide_url = 'http://172.17.0.5:5000'
+#unide_url = 'api.unide.co:5000'
+
+
+def node_up(node, api_key, ports=[], links=[]):
+    payload = {'port': ports, 'link': links}
+    return requests.post('/'.join([unide_url, api_version, 'node', node]),
+                         data=payload,
+                         headers={'Authorization': api_key})
+
+
+def node_destroy(node, api_key):
+    return requests.delete('/'.join([unide_url, api_version, 'node', node]),
+                           headers={'Authorization': api_key})
+
+
+def node_state(node, api_key=None):
+    if node == 'hivy':
+        endpoint = unide_url
+    elif node == 'fleet':
+        endpoint = '/'.join([unide_url, api_version, 'node'])
+        if not api_key:
+            print '/node/<name> is a protected resource, provide an api key'
+    else:
+        endpoint = '/'.join([unide_url, api_version, 'node', node])
+        if not api_key:
+            print '/node/<name> is a protected resource, provide an api key'
+    return requests.get(endpoint, headers={'Authorization': api_key})
+
+
+def node_apply(node, gene, data, api_key):
+    endpoint = '/'.join([unide_url, api_version, 'node', node])
+    payload = {'gene': gene}
+    payload.update(json.loads(data))
+    headers = {
+        'Authorization': api_key,
+        'content-type': 'application/json'
+    }
+    return requests.put(
+        endpoint,
+        data=json.dumps(payload, encoding='utf-8', ensure_ascii=True),
+        headers=headers)
+
+
+def unide_doc():
+    return requests.get('/'.join([unide_url, api_version, 'doc']))
+
+
+def unide_ssh():
+    #TODO Get associated port
+    print 'ssh root@unide.co -p $port -i $key'
+
+
+def unide(args):
+    if args['ssh']:
+        feedback = unide_ssh()
+    else:
+        if args['doc']:
+            feedback = unide_doc()
+        elif args['apply']:
+            feedback = node_apply(
+                args['--node'], args['--gene'],
+                args['--data'], args['--api-key'])
+        elif args['state']:
+            feedback = node_state(args['--node'], args['--api-key'])
+        elif args['up']:
+            feedback = node_up(
+                args['--node'], args['--api-key'],
+                args['--port'], args['--link'])
+        elif args['destroy']:
+            feedback = node_destroy(args['--node'], args['--api-key'])
+
+        print feedback.text
+        #print feedback.json()
+
+
+def main():
+    try:
+        args = docopt(__doc__, version='Unide, Hive client 0.0.1')
+        unide(args)
+        code = 0
+    except Exception, error:
+        print(error)
+        import traceback
+        print '\n' + 79 * '=' + '\n'
+        traceback.print_exc(file=sys.stdout)
+        print '\n' + 79 * '=' + '\n'
+        code = 1
+
+    return code
+
+
+if __name__ == '__main__':
+    sys.exit(main())

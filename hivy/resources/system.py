@@ -19,7 +19,7 @@ import dna.utils
 from hivy import __version__
 import hivy.utils as utils
 import hivy.reactor.reactor as reactor
-from hivy.genetics.saltstack import Saltstack
+import hivy.genetics.saltstack as saltstack
 from hivy.resources.node import RestfulNode
 
 log = dna.logging.logger(__name__)
@@ -31,7 +31,6 @@ class Status(restful.Resource):
     def __init__(self):
         self.hivy_version = dna.utils.Version(__version__)
         self.serf = reactor.Serf()
-        self.salt = Saltstack()
 
     def get(self):
         ''' Inspect Hivy, docker, salt-master and serf states '''
@@ -55,8 +54,7 @@ class Status(restful.Resource):
                 },
                 'docker': docker_version,
                 'serf': self.serf.version(),
-                #'salt': str(self.salt('--version'))
-                'salt': self.salt.version()
+                'salt': saltstack.version()
             }
         })
 
@@ -74,6 +72,6 @@ class Doc(restful.Resource):
                 utils.api_doc(
                     'node/<string:image>',
                     'GET | POST | DELETE',
-                    cpu=2, ram=512): RestfulNode.__doc__
+                    link='db', ram=512): RestfulNode.__doc__
             }
         })

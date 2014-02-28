@@ -19,6 +19,8 @@ class SaltTestCase(unittest.TestCase):
     repository_test = 'hivetech/hivy'
 
     def setUp(self):
+        os.system('test -d /tmp/pillar || mkdir /tmp/pillar')
+        os.system('cp ../genes/data/top.sls /tmp/pillar')
         os.environ.update({'SALT_DATA': '/tmp'})
         self.salt = Saltstack()
 
@@ -43,11 +45,10 @@ class SaltTestCase(unittest.TestCase):
 
     @test.salt_required
     def test_debug_state(self):
-        #FIXME cannot remove /tmp/hivy directory and date_* files
+        #FIXME cannot remove date_* files
         result = self.salt.call(
             'state.sls', self.minion_name_test, ['debug'])
         self.assertTrue(os.path.exists('/tmp/date_csv.csv'))
-        self.assertTrue(os.path.exists('/tmp/hivy'))
 
         self.assertTrue(self.minion_name_test in result)
         for _, feedback in result[self.minion_name_test].iteritems():
@@ -66,7 +67,8 @@ class SaltTestCase(unittest.TestCase):
     def test_store_pillar_data(self):
         pillar_file = '/'.join(
             [self.salt.root_data,
-             'pillar', '{}.sls'.format(self.user_test)])
+             'pillar',
+             '{}.sls'.format(self.user_test)])
         useless_data = {'hello': 'world'}
         self.salt.store_data(self.user_test, useless_data)
         self.assertTrue(os.path.exists(pillar_file))

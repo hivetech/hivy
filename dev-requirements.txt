@@ -5,3 +5,4 @@ flake8==2.1.0
 coveralls==0.4.1
 Flask-Testing==0.4
 piprot==0.5.0
+xmltodict==0.8.6

@@ -17,6 +17,7 @@ import docker
 import time
 import flask
 from flask.ext import restful
+from flask.ext.restful import reqparse
 import hivy.auth as auth
 import hivy.utils as utils
 from hivy.node.foundation import NodeFoundation
@@ -82,19 +83,30 @@ class RestfulNode(restful.Resource):
 
     def post(self, image):
         ''' Create and register a new node '''
+        parser = reqparse.RequestParser()
+        parser.add_argument('link', type=str, action='append')
+        parser.add_argument('port', type=int, action='append')
+        args = parser.parse_args()
+
         log.info('request node creation', user=flask.g.get('user'))
         node = NodeFoundation(self._image_name(image), self._node_name(image))
-        feedback = node.activate()
+
+        for link in args['link']:
+            log.info('acquiring new link', link=link)
+            node.discover(link)
+
+        feedback = node.activate(args['port'])
         # Wait for the node to boot
         # TODO Replace below by node.wait_boot()
-        time.sleep(10)
-        registration, success = node.register()
-        feedback.update({
-            'registration': {
-                'message': registration,
-                'success': success
-            }
-        })
+        if not 'error' in feedback:
+            time.sleep(10)
+            registration, success = node.register()
+            feedback.update({
+                'registration': {
+                    'message': registration,
+                    'success': success
+                }
+            })
         return feedback
 
     def delete(self, image):
