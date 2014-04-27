@@ -16,6 +16,7 @@ tests: warn_missing_linters
 	#piprot --outdated requirements.txt dev-requirements.txt
 	flake8 tests hivy
 	nosetests -w tests --pdb --pdb-failures --with-xunit --xunit-file=.test_report.xml --with-yanc --with-coverage --cover-package=hivy
+	./scripts/test-analyze.py
 
 watch: warn_missing_linters
 	watchmedo shell-command \

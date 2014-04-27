@@ -35,15 +35,15 @@ class Status(restful.Resource):
     def get(self):
         ''' Inspect Hivy, docker, salt-master and serf states '''
         log.info('request hivy status')
-        docker_version, docker_status = utils.docker_check()
+        docker_version, docker_status = dna.utils.docker_check()
 
         return flask.jsonify({
             'state': {
                 'hivy': os.environ.get('HIVY_STATUS', True),
                 'sub-systems': {
                     'docker': docker_status,
-                    'salt-master': utils.is_running('salt-master'),
-                    'serf': utils.is_running('serf')
+                    'salt-master': dna.utils.is_running('salt-master'),
+                    'serf': dna.utils.is_running('serf')
                 }
             },
             'version': {

@@ -18,9 +18,9 @@ Options:
 '''
 
 
+import os
 from flask import Flask
 from flask.ext import restful
-import os
 from docopt import docopt
 from hivy import __version__
 import hivy.conf as conf

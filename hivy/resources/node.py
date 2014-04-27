@@ -17,7 +17,6 @@ import docker
 import time
 import flask
 from flask.ext import restful
-from flask.ext.restful import reqparse
 import hivy.auth as auth
 import hivy.utils as utils
 from hivy.node.foundation import NodeFoundation
@@ -55,13 +54,13 @@ class Fleet(restful.Resource):
         return report
 
 
+# TODO Support custom provider
 class RestfulNode(restful.Resource):
     ''' The "node foundation" as a restful resource '''
 
     method_decorators = [auth.requires_token_auth]
-    #default_image = os.environ.get('NODE_IMAGE', 'quay.io/hackliff/node')
     node_name_semantic = '{}-{}'
-    image_name_semantic = '{}/{}/{}:{}'
+    image_name_semantic = '{}/{}:{}'
 
     def _node_name(self, image):
         ''' Customize the standard node name to the user '''
@@ -71,9 +70,8 @@ class RestfulNode(restful.Resource):
     def _image_name(self, image):
         ''' Customize the standard node name to the user '''
         tag = 'latest'
-        provider = 'quay.io'
         return self.image_name_semantic.format(
-            provider, flask.g.get('user'), image, tag)
+            flask.g.get('user'), image, tag)
 
     def get(self, image):
         ''' Fetch and return node informations '''
@@ -83,22 +81,24 @@ class RestfulNode(restful.Resource):
 
     def post(self, image):
         ''' Create and register a new node '''
-        parser = reqparse.RequestParser()
-        parser.add_argument('link', type=str, action='append')
-        parser.add_argument('port', type=int, action='append')
-        args = parser.parse_args()
+        if not flask.request.json:
+            flask.abort(400)
 
         log.info('request node creation', user=flask.g.get('user'))
+        data = flask.request.get_json()
+        log.info(data)
+
         node = NodeFoundation(self._image_name(image), self._node_name(image))
 
-        for link in args['link']:
+        for link in data.get('links', []):
             log.info('acquiring new link', link=link)
             node.discover(link)
 
-        feedback = node.activate(args['port'])
+        feedback = node.activate(
+            data.get('ports', []), data.get('env', {}))
         # Wait for the node to boot
         # TODO Replace below by node.wait_boot()
-        if not 'error' in feedback:
+        if 'error' not in feedback:
             time.sleep(10)
             registration, success = node.register()
             feedback.update({
@@ -107,6 +107,7 @@ class RestfulNode(restful.Resource):
                     'success': success
                 }
             })
+
         return feedback
 
     def delete(self, image):
@@ -127,7 +128,7 @@ class RestfulNode(restful.Resource):
         ''' Manipulate the given node '''
         node = NodeFoundation(self._image_name(image), self._node_name(image))
         results = {}
-        if not flask.request.json or not 'gene' in flask.request.json:
+        if not flask.request.json or 'gene' not in flask.request.json:
             flask.abort(400)
 
         genes, data = utils.clean_request_data(flask.request.get_json())

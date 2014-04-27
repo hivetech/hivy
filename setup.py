@@ -22,7 +22,7 @@ requires = [
     'sh>=1.09',
     'Logbook>=0.6.0',
     'structlog>=0.4.1',
-    'docker-py>=0.3.0']
+    'docker-py>=0.3.1']
 
 
 def long_description():

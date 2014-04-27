@@ -12,14 +12,14 @@
 '''
 
 import os
-import hivy.utils as utils
+import dna.utils
 
 
 def docker_required(function):
     ''' Run the provided function only if we can reach the docker server '''
     def inner(*args, **kwargs):
         ''' decorator '''
-        _, status = utils.docker_check()
+        _, status = dna.utils.docker_check()
         if status and is_allowed('docker'):
             return function(*args, **kwargs)
         else:
@@ -31,7 +31,7 @@ def serf_required(function):
     ''' Run the provided function only if we can reach the serf cluster '''
     def inner(*args, **kwargs):
         ''' decorator '''
-        if utils.is_running('serf') and is_allowed('serf'):
+        if dna.utils.is_running('serf') and is_allowed('serf'):
             return function(*args, **kwargs)
         else:
             pass
@@ -42,7 +42,7 @@ def salt_required(function):
     ''' Run the provided function only if we can reach the salt master '''
     def inner(*args, **kwargs):
         ''' decorator '''
-        if utils.is_running('salt-master') and is_allowed('salt'):
+        if dna.utils.is_running('salt-master') and is_allowed('salt'):
             return function(*args, **kwargs)
         else:
             pass

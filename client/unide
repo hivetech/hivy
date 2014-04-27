@@ -14,7 +14,7 @@ Usage:
   unide ssh
   unide state [--api-key=<key>] [--node=<node>]
   unide apply --node=<node> --gene=<gene>... [--data=<data>] --api-key=<key>
-  unide up --node=<node> --api-key=<key> [--link=<name>...] [--port=<num>...]
+  unide up --node=<node> --api-key=<key> [--env=<env>] [--link=<name>...] [--port=<num>...]
   unide destroy --node=<node> --api-key=<key>
 
 Options:
@@ -23,7 +23,8 @@ Options:
   --api-key=<key>     User token for authentification
   --node=<node>       Node name the subcommand should focus on [default: hivy]
   --gene=<gene>       Configuration gene to apply on the given node
-  --data=<data>       Json keys:values to use with the genes [default: {}]
+  --data=<data>       Json to use with the genes [default: {}]
+  --env=<env>         Json to inject into the environment [default: {}]
   --link=<name>       Services to link to the node
   --port=<num>        Node port to expose
 '''
@@ -41,18 +42,6 @@ unide_url = 'http://127.0.0.1:5000'
 #unide_url = 'api.unide.co:5000'
 
 
-def node_up(node, api_key, ports=[], links=[]):
-    payload = {'port': ports, 'link': links}
-    return requests.post('/'.join([unide_url, api_version, 'node', node]),
-                         data=payload,
-                         headers={'Authorization': api_key})
-
-
-def node_destroy(node, api_key):
-    return requests.delete('/'.join([unide_url, api_version, 'node', node]),
-                           headers={'Authorization': api_key})
-
-
 def node_state(node, api_key=None):
     if node == 'hivy':
         endpoint = unide_url
@@ -65,6 +54,27 @@ def node_state(node, api_key=None):
         if not api_key:
             print '/node/<name> is a protected resource, provide an api key'
     return requests.get(endpoint, headers={'Authorization': api_key})
+
+
+def node_destroy(node, api_key):
+    return requests.delete('/'.join([unide_url, api_version, 'node', node]),
+                           headers={'Authorization': api_key})
+
+
+def node_up(node, api_key, env={}, ports=[], links=[]):
+    payload = {
+        'ports': ports,
+        'links': links,
+        'env': json.loads(env)
+    }
+    headers = {
+        'Authorization': api_key,
+        'content-type': 'application/json'
+    }
+    return requests.post(
+        '/'.join([unide_url, api_version, 'node', node]),
+        data=json.dumps(payload, encoding='utf-8', ensure_ascii=True),
+        headers=headers)
 
 
 def node_apply(node, gene, data, api_key):
@@ -86,8 +96,8 @@ def unide_doc():
 
 
 def unide_ssh():
-    #TODO Get associated port
-    print 'ssh root@unide.co -p $port -i $key'
+    # TODO Get associated port
+    raise NotImplementedError()
 
 
 def unide(args):
@@ -105,7 +115,7 @@ def unide(args):
         elif args['up']:
             feedback = node_up(
                 args['--node'], args['--api-key'],
-                args['--port'], args['--link'])
+                args['--env'], args['--port'], args['--link'])
         elif args['destroy']:
             feedback = node_destroy(args['--node'], args['--api-key'])
 

@@ -15,10 +15,10 @@
 import time
 import docker
 import hivy.reactor.reactor as reactor
-import hivy.utils as utils
 from hivy.genetics.saltstack import Saltstack
 from hivy.node.factory import NodeFactory
 import dna.logging
+import dna.utils
 
 log = dna.logging.logger(__name__)
 
@@ -36,7 +36,7 @@ class NodeFoundation(NodeFactory):
     '''
 
     def __init__(self, image, name=None, role='node'):
-        name = name or utils.generate_random_name()
+        name = name or dna.utils.generate_random_name()
         NodeFactory.__init__(self, image, name, role)
 
         self.serf = reactor.Serf()
@@ -92,15 +92,17 @@ class NodeFoundation(NodeFactory):
             return
 
         link_name = link_name.upper()
-        self.environment.update({
+        tmp_env = {
             '{}_HOST'.format(link_name):
             link_node['NetworkSettings']['IPAddress'],
             '{}_PORTS_EXPOSED'.format(link_name):
             ','.join(map(lambda x: x.split('/')[0],
                          link_node['NetworkSettings']['Ports'].keys()))
-        })
+        }
         for port_spec in link_node['NetworkSettings']['Ports']:
             port = port_spec.split('/')[0]
-            self.environment.update({
+            tmp_env.update({
                 '{}_PORT_{}'.format(link_name, port): port
             })
+        self.environment.update(tmp_env)
+        self.links.append(tmp_env)

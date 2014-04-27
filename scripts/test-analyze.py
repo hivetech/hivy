@@ -54,16 +54,16 @@ if __name__ == '__main__':
             '{} skipped tests'.format(overview['skips'])))
         if overview['failures'] == 0:
             puts(colored.green(
-                '{} failures tests'.format(overview['failures'])))
+                '{} failed tests'.format(overview['failures'])))
         else:
             puts(colored.red(
-                '{} failures tests'.format(overview['failures'])))
+                '{} failed tests'.format(overview['failures'])))
         if overview['errors'] == 0:
             puts(colored.green(
-                '{} errors tests'.format(overview['errors'])))
+                '{} crashed tests'.format(overview['errors'])))
         else:
             puts(colored.red(
-                '{} errors tests'.format(overview['errors'])))
+                '{} crashed tests'.format(overview['errors'])))
 
     puts(colored.blue('\nScanning individual tests ...'))
     for test in report:

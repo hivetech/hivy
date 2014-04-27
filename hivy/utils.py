@@ -6,14 +6,7 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
-import sh
-import os
-import string
 import yaml
-import random
-import uuid
-import docker
-import requests
 import dna.utils
 from hivy import __version__
 
@@ -32,50 +25,13 @@ def api_doc(resource, method='GET', **kwargs):
     return doc
 
 
-def is_running(process):
-    ''' `pgrep` returns an error code if no process was found '''
-    try:
-        pgrep = sh.Command('/usr/bin/pgrep')
-        pgrep(process)
-        flag = True
-    except sh.ErrorReturnCode_1:
-        flag = False
-    return flag
-
-
-def generate_random_name(size=8, chars=string.ascii_lowercase + string.digits):
-    ''' Create a random name to assign to a node '''
-    return ''.join(random.choice(chars) for _ in range(size))
-
-
-def docker_check():
-    ''' Check if docker is properly accessible '''
-    docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
-    dock = docker.Client(base_url=docker_url, timeout=5)
-    try:
-        docker_version = dock.version()
-        status = True
-    except requests.ConnectionError, error:
-        docker_version = {'error': str(error)}
-        status = False
-    except requests.Timeout, error:
-        docker_version = {'error': str(error)}
-        status = False
-    return docker_version, status
-
-
-def generate_unique_id():
-    ''' Hivy GUID method '''
-    event_id = uuid.uuid4().get_urn()
-    return event_id.split(':')[-1]
-
-
 def write_yaml_data(filepath, data):
     ''' Dump a dictionnary into a file as yaml '''
     with open(filepath, 'w') as yaml_fd:
         yaml_fd.write(yaml.dump(data))
 
 
+# NOTE Make it a generic method ?
 def clean_request_data(request_data):
     ''' Make sure data dict is utf-8 encoded '''
     data = {}
@@ -85,8 +41,5 @@ def clean_request_data(request_data):
             map(lambda x: x.encode('utf-8'), value)
             if isinstance(value, list) else value.encode('utf-8')
             for key, value in request_data.iteritems()}
-    #for key, value in request_data.iteritems():
-        #data[key.encode('utf-8')] = \
-            #map(lambda x: x.encode('utf-8'), value) \
-            #if isinstance(value, list) else value.encode('utf-8')
+
     return genes, data

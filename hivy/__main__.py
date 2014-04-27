@@ -6,14 +6,12 @@
   Hivy Flask app
   --------------
 
-  Entry point, invoke as `http` or `python -m httpie`
-
   :copyright (c) 2014 Hive Tech, SAS.
   :license: %LICENCE%, see LICENSE for more details.
 '''
 
-from hivy.core import main
 import sys
+from hivy.core import main
 
 
 if __name__ == '__main__':

@@ -30,8 +30,10 @@ class NodeFactory(object):
 
     __metaclass__ = abc.ABCMeta
     builtin_ports = {22: None}
+    links = []
 
-    def __init__(self, image, name, role):
+    def __init__(self, image, name, role,
+                 docker_url=settings.DEFAULT_DOCKER_URL):
         log.info('initiating node', image=image, name=name, role=role)
         self.image = image
         self.name = name
@@ -41,27 +43,30 @@ class NodeFactory(object):
             'NODE_ROLE': role
         }
 
-        #TODO version and timeout not hardcoded
-        docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
+        # TODO version and timeout not hardcoded
         log.info('connecting to docker server',
                  url=docker_url, version='0.7.6', timeout=10)
         self.dock = docker.Client(
             base_url=docker_url, version='0.7.6', timeout=10)
 
-    def activate(self, ports=[]):
+    def activate(self, ports=[], extra_env={}):
         ''' Create a new docker container from an existing image '''
         try:
             exposed_ports = self.builtin_ports
             exposed_ports.update({port: None for port in ports})
+            self.environment.update(extra_env)
             feedback = self.dock.create_container(
                 self.image,
                 detach=True,
                 hostname=self.name,
                 name=self.name,
                 ports=exposed_ports.keys(),
-                environment=self.environment
+                environment=self.environment,
+                command=['/sbin/my_init', '--enable-insecure-key']
             )
             feedback.update({'name': self.name})
+
+            # NOTE Should use publish_all_ports instead ?
             self.dock.start(feedback['Id'], port_bindings=exposed_ports)
             log.info('activated node',
                      image=self.image, name=self.name,
@@ -109,7 +114,7 @@ class NodeFactory(object):
                     'hostname': node['Config']['Hostname']
                 },
                 'acl': [],
-                'links': []}
+                'links': self.links}
             log.info('inspected node', infos=infos)
         except docker.APIError, error:
             log.error('node inspection failed', error=error)

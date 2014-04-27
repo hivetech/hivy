@@ -13,7 +13,7 @@
 
 import sh
 import dna.logging
-import hivy.utils as utils
+import dna.utils
 
 log = dna.logging.logger(__name__)
 
@@ -26,7 +26,7 @@ class Serf(object):
     def __init__(self, path='/usr/local/bin/serf'):
         try:
             self.serf = sh.Command(path)
-            self.enable = utils.is_running('serf')
+            self.enable = dna.utils.is_running('serf')
         except sh.CommandNotFound:
             log.warn('serf command not found', path=path)
             self.serf = None
@@ -65,6 +65,6 @@ class Serf(object):
 
     def unregister_node(self, node_ip):
         ''' Mark the given node agent as "left" '''
-        #FIXME There is no effect, agent still as "failed"
+        # FIXME There is no effect, agent still as "failed"
         log.info('unregistering node', ip=node_ip)
         return self._serf_command('force-leave', node_ip)

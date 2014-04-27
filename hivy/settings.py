@@ -9,13 +9,11 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
-
 LOG = {
     'file': '/tmp/hivy.log',
     'format': (u'[{record.time:%m-%d %H:%M}] '
                '{record.level_name} {record.channel} {record.message}')
 }
-
 SERVER_URL = 'http://api.unide.co'
-
 GENES = ['debug']
+DEFAULT_DOCKER_URL = 'unix://var/run/docker.sock'
