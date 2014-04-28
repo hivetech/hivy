@@ -1,12 +1,10 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# Copyright (C) 2014 Hive Tech, SAS.
-
 
 import unittest
-from hivy.core import app
+import apy.core
+import hivy.conf
+import hivy.test_utils as test_utils
 
 
 # http://flask.pocoo.org/docs/testing/
@@ -14,20 +12,23 @@ from hivy.core import app
 class SystemTestCase(unittest.TestCase):
 
     def setUp(self):
+        app = apy.core.App(hivy.conf.ROUTES).app
         app.config['TESTING'] = True
         self.app = app.test_client()
 
+    @test_utils.consul_required
     def test_get_status(self):
         res = self.app.get('/')
-        #TODO Check res['status']['docker'] == DOCKER_ON
-        for service in ['hivy', 'docker', 'serf', 'salt']:
+        # TODO Check res['status']['docker'] == DOCKER_ON
+        for service in ['hivy', 'docker', 'consul', 'salt']:
             self.assertTrue(service in res.data)
 
+    @test_utils.consul_required
     def test_get_version(self):
         res = self.app.get('/')
         for info in ['major', 'minor', 'patch']:
             self.assertTrue(info in res.data)
-        for service in ['docker', 'salt', 'serf']:
+        for service in ['docker', 'salt', 'consul']:
             self.assertTrue(service in res.data)
 
     def test_get_v0_doc(self):

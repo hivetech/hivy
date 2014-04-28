@@ -16,11 +16,10 @@ import flask
 from flask.ext import restful
 import dna.logging
 import dna.utils
-from hivy import __version__
-import hivy.utils as utils
-import hivy.reactor.reactor as reactor
+import hivy.utils
 import hivy.genetics.saltstack as saltstack
 from hivy.resources.node import RestfulNode
+import pyconsul.http
 
 log = dna.logging.logger(__name__)
 
@@ -29,11 +28,12 @@ class Status(restful.Resource):
     ''' Expose Hivy services states and versions '''
 
     def __init__(self):
-        self.hivy_version = dna.utils.Version(__version__)
-        self.serf = reactor.Serf()
+        self.hivy_version = dna.utils.Version(hivy.__version__)
+        # Assume Consul master is on the same host
+        self.consul_ = pyconsul.http.Consul()
 
     def get(self):
-        ''' Inspect Hivy, docker, salt-master and serf states '''
+        ''' Inspect Hivy, docker, salt-master and consul states '''
         log.info('request hivy status')
         docker_version, docker_status = dna.utils.docker_check()
 
@@ -43,7 +43,7 @@ class Status(restful.Resource):
                 'sub-systems': {
                     'docker': docker_status,
                     'salt-master': dna.utils.is_running('salt-master'),
-                    'serf': dna.utils.is_running('serf')
+                    'consul': self.consul_.status
                 }
             },
             'version': {
@@ -53,7 +53,7 @@ class Status(restful.Resource):
                     'patch': self.hivy_version.patch
                 },
                 'docker': docker_version,
-                'serf': self.serf.version(),
+                'consul_': 'not implemented',
                 'salt': saltstack.version()
             }
         })
@@ -68,8 +68,8 @@ class Doc(restful.Resource):
         return flask.jsonify({
             'api': {
                 'GET /': Status.__doc__,
-                utils.api_doc('doc', 'GET'): Doc.__doc__,
-                utils.api_doc(
+                hivy.utils.api_doc('doc', 'GET'): Doc.__doc__,
+                hivy.utils.api_doc(
                     'node/<string:image>',
                     'GET | POST | DELETE',
                     link='db', ram=512): RestfulNode.__doc__

@@ -49,6 +49,17 @@ def salt_required(function):
     return inner
 
 
+def consul_required(function):
+    ''' Run the provided function only if we can reach the salt master '''
+    def inner(*args, **kwargs):
+        ''' decorator '''
+        if dna.utils.is_running('consul') and is_allowed('consul'):
+            return function(*args, **kwargs)
+        else:
+            pass
+    return inner
+
+
 def is_allowed(command):
     ''' Mark "command" as available if running and allowed '''
     return os.environ.get('USE_{}'.format(command.upper()))

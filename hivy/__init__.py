@@ -15,6 +15,6 @@
 
 __project__ = 'hivy'
 __author__ = 'Xavier Bruhiere'
-__copyright__ = 'Hive Tech, SAS'
+__copyright__ = 'Hive Tech S.A.S'
 __licence__ = 'Apache 2.0'
-__version__ = '0.0.8'
+__version__ = '0.0.9'

@@ -12,10 +12,9 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
-import os
 import abc
 import docker
-import hivy.settings as settings
+import hivy.settings
 import dna.logging
 
 log = dna.logging.logger(__name__)
@@ -29,11 +28,12 @@ class NodeFactory(object):
     '''
 
     __metaclass__ = abc.ABCMeta
+
     builtin_ports = {22: None}
     links = []
 
     def __init__(self, image, name, role,
-                 docker_url=settings.DEFAULT_DOCKER_URL):
+                 docker_url=hivy.settings.DEFAULT_DOCKER_URL):
         log.info('initiating node', image=image, name=name, role=role)
         self.image = image
         self.name = name
@@ -98,7 +98,7 @@ class NodeFactory(object):
             infos = {
                 'name': self.name,
                 'ip': '{}:{}'.format(
-                    settings.SERVER_URL,
+                    hivy.settings.SERVER_URL,
                     node['NetworkSettings']['Ports']['22/tcp'][0]['HostPort']),
                 'state': node['State'],
                 'node': {

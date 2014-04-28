@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# Copyright (C) 2014 Hive Tech, SAS.
 
 import unittest
 import os
@@ -9,6 +7,7 @@ import yaml
 import hivy.utils as utils
 
 
+# TODO Test clean_request_data
 class UtilsTestCase(unittest.TestCase):
 
     random_length = 64

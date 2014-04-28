@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# Copyright (C) 2014 Hive Tech, SAS.
-
 
 import unittest
 import os
 import yaml
-import hivy.test as test
+import hivy.test_utils as test_utils
 from hivy.genetics.saltstack import Saltstack
 
 
@@ -24,18 +21,18 @@ class SaltTestCase(unittest.TestCase):
         os.environ.update({'SALT_DATA': '/tmp'})
         self.salt = Saltstack()
 
-    @test.salt_required
+    @test_utils.salt_required
     def test_cmd_call(self):
         result = self.salt.call('test.ping', self.minion_name_test)
         self.assertTrue(result == {self.minion_name_test: True})
 
-    @test.salt_required
+    @test_utils.salt_required
     def test_read_config(self):
         self.assertTrue(self.salt.config)
         self.assertTrue(self.salt.config['renderer'] == 'yaml_jinja')
         self.assertTrue(self.salt.config['interface'] == '0.0.0.0')
 
-    @test.salt_required
+    @test_utils.salt_required
     def test_read_pillar(self):
         data = self.salt._read_pillar(self.minion_name_test)
         self.assertTrue(self.minion_name_test in data)
@@ -43,9 +40,9 @@ class SaltTestCase(unittest.TestCase):
         self.assertTrue(
             data[self.minion_name_test]['repository'] == self.repository_test)
 
-    @test.salt_required
+    @test_utils.salt_required
     def test_debug_state(self):
-        #FIXME cannot remove date_* files
+        # FIXME cannot remove date_* files
         result = self.salt.call(
             'state.sls', self.minion_name_test, ['debug'])
         self.assertTrue(os.path.exists('/tmp/date_csv.csv'))

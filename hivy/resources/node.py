@@ -14,10 +14,9 @@
 
 import os
 import docker
-import time
 import flask
 from flask.ext import restful
-import hivy.auth as auth
+import apy.auth
 import hivy.utils as utils
 from hivy.node.foundation import NodeFoundation
 import dna.logging
@@ -28,7 +27,7 @@ log = dna.logging.logger(__name__)
 class Fleet(restful.Resource):
     ''' User nodes organization as a restful resource '''
 
-    method_decorators = [auth.requires_token_auth]
+    method_decorators = [apy.auth.requires_token_auth]
 
     def __init__(self):
         docker_url = os.environ.get('DOCKER_URL', 'unix://var/run/docker.sock')
@@ -58,7 +57,7 @@ class Fleet(restful.Resource):
 class RestfulNode(restful.Resource):
     ''' The "node foundation" as a restful resource '''
 
-    method_decorators = [auth.requires_token_auth]
+    method_decorators = [apy.auth.requires_token_auth]
     node_name_semantic = '{}-{}'
     image_name_semantic = '{}/{}:{}'
 
@@ -94,19 +93,7 @@ class RestfulNode(restful.Resource):
             log.info('acquiring new link', link=link)
             node.discover(link)
 
-        feedback = node.activate(
-            data.get('ports', []), data.get('env', {}))
-        # Wait for the node to boot
-        # TODO Replace below by node.wait_boot()
-        if 'error' not in feedback:
-            time.sleep(10)
-            registration, success = node.register()
-            feedback.update({
-                'registration': {
-                    'message': registration,
-                    'success': success
-                }
-            })
+        feedback = node.activate(data.get('ports', []), data.get('env', {}))
 
         return feedback
 
