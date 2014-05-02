@@ -31,15 +31,10 @@ def write_yaml_data(filepath, data):
         yaml_fd.write(yaml.dump(data))
 
 
-# NOTE Make it a generic method ?
-def clean_request_data(request_data):
+def to_utf8_dict(request_data):
     ''' Make sure data dict is utf-8 encoded '''
-    data = {}
-    genes = map(lambda x: x.encode('utf-8'), request_data.pop('gene'))
-
-    data = {key.encode('utf-8'):
-            map(lambda x: x.encode('utf-8'), value)
-            if isinstance(value, list) else value.encode('utf-8')
-            for key, value in request_data.iteritems()}
-
-    return genes, data
+    return {
+        key.encode('utf-8'): map(lambda x: x.encode('utf-8'), value)
+        if isinstance(value, list) else value.encode('utf-8')
+        for key, value in request_data.iteritems()
+    }

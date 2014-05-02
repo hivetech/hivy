@@ -1,12 +1,7 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# Copyright (C) 2014 Hive Tech, SAS.
-
 
 import unittest
-
 import hivy.test as test
 import hivy.reactor.reactor as reactor
 
@@ -42,7 +37,7 @@ class SerfTestCase(unittest.TestCase):
     @test.docker_required
     @test.serf_required
     def test_register_node(self):
-        #FIXME to make this test to work we need:
+        # FIXME to make this test to work we need:
         #   * A running local serf agent
         #   * A running lab
         #   * Its ip
@@ -53,7 +48,7 @@ class SerfTestCase(unittest.TestCase):
 
     @test.serf_required
     def test_register_absent_node(self):
-        #FIXME We need a running agent here as well
+        # FIXME We need a running agent here as well
         feedback, flag = self.serf.register_node(self.wrong_ip)
         self.assertFalse(flag)
         self.assertTrue('Error' in feedback)

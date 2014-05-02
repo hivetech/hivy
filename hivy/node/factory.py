@@ -15,10 +15,23 @@
 import os
 import abc
 import docker
-import hivy.settings as settings
+import hivy.settings
 import dna.logging
 
 log = dna.logging.logger(__name__)
+
+
+def safe_docker(docker_command):
+    ''' catch docker errors '''
+    def inner(*args, **kwargs):
+        try:
+            feedback = docker_command(*args, **kwargs)
+        # FIXME except docker.APIError, error:
+        except Exception as error:
+            feedback = {'error': str(error)}
+            log.error('node action failed', error=str(error))
+        return feedback
+    return inner
 
 
 class NodeFactory(object):
@@ -29,95 +42,97 @@ class NodeFactory(object):
     '''
 
     __metaclass__ = abc.ABCMeta
-    builtin_ports = {22: None}
-    links = []
 
-    def __init__(self, image, name, role,
-                 docker_url=settings.DEFAULT_DOCKER_URL):
-        log.info('initiating node', image=image, name=name, role=role)
+    # Enable ssh per default
+    _builtin_ports = {22: None}
+    # See https://github.com/phusion/passenger-docker
+    _phusion_command = ['/sbin/my_init', '--enable-insecure-key']
+
+    def __init__(self, image, name,
+                 docker_url=hivy.settings.DEFAULT_DOCKER_URL):
+
+        log.info('initiating node', image=image, name=name)
         self.image = image
         self.name = name
-        self.role = role
         self.environment = {
             'NODE_ID': name,
-            'NODE_ROLE': role
         }
 
+        self.links = []
         # TODO version and timeout not hardcoded
-        log.info('connecting to docker server',
-                 url=docker_url, version='0.7.6', timeout=10)
+        log.info('connecting to docker server', url=docker_url)
         self.dock = docker.Client(
             base_url=docker_url, version='0.7.6', timeout=10)
 
-    def activate(self, ports=[], extra_env={}):
-        ''' Create a new docker container from an existing image '''
-        try:
-            exposed_ports = self.builtin_ports
-            exposed_ports.update({port: None for port in ports})
-            self.environment.update(extra_env)
-            feedback = self.dock.create_container(
-                self.image,
-                detach=True,
-                hostname=self.name,
-                name=self.name,
-                ports=exposed_ports.keys(),
-                environment=self.environment,
-                command=['/sbin/my_init', '--enable-insecure-key']
-            )
-            feedback.update({'name': self.name})
+    def _build_container_attributes(self, exposed_ports):
+        return {
+            'image': self.image,
+            'hostname': self.name,
+            'name': self.name,
+            'ports': exposed_ports.keys(),
+            'environment': self.environment,
+            'command': self._phusion_command,
+            'detach': True
+        }
 
-            # NOTE Should use publish_all_ports instead ?
-            self.dock.start(feedback['Id'], port_bindings=exposed_ports)
-            log.info('activated node',
-                     image=self.image, name=self.name,
-                     env=self.environment, feedback=feedback)
-        except docker.APIError, error:
-            feedback = {'error': str(error)}
-            log.error('node activation failed', error=error)
+    @safe_docker
+    def activate(self, ports=None, extra_env=None):
+        ''' Create a new docker container from an existing image '''
+        ports = ports or []
+        extra_env = extra_env or {}
+
+        self.environment.update(extra_env)
+        exposed_ports = self._builtin_ports
+        exposed_ports.update({port: None for port in ports})
+        properties = self._build_container_attributes(exposed_ports)
+
+        feedback = self.dock.create_container(**properties)
+        feedback.update({'name': self.name})
+
+        # NOTE Should use publish_all_ports instead ?
+        self.dock.start(feedback['Id'], port_bindings=exposed_ports)
+        log.info('activated node',
+                 image=self.image, name=self.name,
+                 env=self.environment, feedback=feedback)
 
         return feedback
 
+    @safe_docker
     def destroy(self):
         ''' Stop and remove the container '''
-        try:
-            self.dock.stop(self.name)
-            self.dock.remove_container(self.name)
-            feedback = {
-                'name': self.name,
-                'destroyed': True}
-            log.info('node destroyed', feedback=feedback)
-        except docker.APIError, error:
-            log.error('node destruction failed', error=error)
-            feedback = {'error': str(error)}
-        return feedback
+        self.dock.stop(self.name)
+        log.info('node stopped')
+        self.dock.remove_container(self.name)
+        log.info('node destroyed')
+        return {
+            'name': self.name,
+            'destroyed': True
+        }
 
-    def inspect(self):
+    @property
+    @safe_docker
+    def properties(self):
         ''' Fetch container relevant informations for the user '''
-        try:
-            node = self.dock.inspect_container(self.name)
-            infos = {
-                'name': self.name,
-                'ip': '{}:{}'.format(
-                    settings.SERVER_URL,
-                    node['NetworkSettings']['Ports']['22/tcp'][0]['HostPort']),
-                'state': node['State'],
-                'node': {
-                    'created': node['Created'],
-                    'id': node['ID'],
-                    'env': node['Config']['Env'],
-                    'cpu': node['Config']['CpuShares'],
-                    'memory': node['Config']['Memory'],
-                    'memory_swap': node['Config']['MemorySwap'],
-                    'image': node['Config']['Image'],
-                    'ports': node['HostConfig']['PortBindings'],
-                    'virtual_ip': node['NetworkSettings']['IPAddress'],
-                    'hostname': node['Config']['Hostname']
-                },
-                'acl': [],
-                'links': self.links}
-            log.info('inspected node', infos=infos)
-        except docker.APIError, error:
-            log.error('node inspection failed', error=error)
-            infos = {'error': str(error)}
-
-        return infos
+        node = self.dock.inspect_container(self.name)
+        return {
+            'name': self.name,
+            'ip': ':'.join([
+                os.environ.get('DOMAIN', 'api.unide.co'),
+                node['NetworkSettings']['Ports']['22/tcp'][0]['HostPort']
+            ]),
+            'state': node['State'],
+            'node': {
+                'created': node['Created'],
+                'id': node['ID'],
+                'env': node['Config']['Env'],
+                'cpu': node['Config']['CpuShares'],
+                'memory': node['Config']['Memory'],
+                'memory_swap': node['Config']['MemorySwap'],
+                'image': node['Config']['Image'],
+                'ports': node['HostConfig']['PortBindings'],
+                'virtual_ip': node['NetworkSettings']['IPAddress'],
+                'hostname': node['Config']['Hostname']
+            },
+            'acl': [],
+            'links': self.links
+        }

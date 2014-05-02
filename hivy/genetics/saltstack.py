@@ -66,7 +66,7 @@ class Saltstack(object):
         log.info('reading pillar', minions=servers_pattern)
         return self.call('pillar.items', servers_pattern)
 
-    def call(self, function, servers_pattern='*', args=[], kwargs={}):
+    def call(self, function, servers_pattern='*', *args, **kwargs):
         ''' Wrap a salt call '''
         log.info('running salt state',
                  function=function, minions=servers_pattern, args=args)

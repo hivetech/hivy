@@ -59,3 +59,7 @@ links.md
 # docker-py local installation
 docker-py
 .test_report.xml
+
+# Deprecated for produciton
+#_reactor
+.python-version

@@ -23,9 +23,9 @@ class SerfHandler(object):
     ''' Wrap a serf event into a python friendly context '''
 
     def __init__(self):
-        #TODO Payload on stdin
-        #TODO All SERF_TAG_* variables
-        #NOTE .get() are for testing, remove it later ?
+        # TODO Payload on stdin
+        # TODO All SERF_TAG_* variables
+        # NOTE .get() are for testing, remove it later ?
         self.name = os.environ.get('SERF_SELF_NAME')
         self.role = os.environ.get('SERF_SELF_ROLE')
         if os.environ.get('SERF_EVENT', '') == 'user':
