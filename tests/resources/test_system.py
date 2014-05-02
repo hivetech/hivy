@@ -2,7 +2,8 @@
 # vim:fenc=utf-8
 
 import unittest
-import apy.core
+from nose.tools import ok_
+import dna.apy.core
 import hivy.conf
 import hivy.test_utils as test_utils
 
@@ -12,24 +13,26 @@ import hivy.test_utils as test_utils
 class SystemTestCase(unittest.TestCase):
 
     def setUp(self):
-        app = apy.core.App(hivy.conf.ROUTES).app
+        application = dna.apy.core.Application
+        application.setup_routes(hivy.conf.ROUTES)
+        app = application.app
         app.config['TESTING'] = True
         self.app = app.test_client()
 
-    @test_utils.consul_required
+    @test_utils.module_required('consul')
     def test_get_status(self):
         res = self.app.get('/')
         # TODO Check res['status']['docker'] == DOCKER_ON
         for service in ['hivy', 'docker', 'consul', 'salt']:
-            self.assertTrue(service in res.data)
+            ok_(service in res.data)
 
-    @test_utils.consul_required
+    @test_utils.module_required('consul')
     def test_get_version(self):
         res = self.app.get('/')
         for info in ['major', 'minor', 'patch']:
-            self.assertTrue(info in res.data)
+            ok_(info in res.data)
         for service in ['docker', 'salt', 'consul']:
-            self.assertTrue(service in res.data)
+            ok_(service in res.data)
 
     def test_get_v0_doc(self):
         res = self.app.get('/v0/doc')

@@ -2,11 +2,6 @@
 # vim:fenc=utf-8
 
 '''
-  test helpers
-  ------------
-
-  Provide some useful functions for efficient tests
-
   :copyright (c) 2014 Hive Tech, SAS.
   :license: Apache 2.0, see LICENSE for more details.
 '''
@@ -27,37 +22,17 @@ def docker_required(function):
     return inner
 
 
-def serf_required(function):
-    ''' Run the provided function only if we can reach the serf cluster '''
-    def inner(*args, **kwargs):
-        ''' decorator '''
-        if dna.utils.is_running('serf') and is_allowed('serf'):
-            return function(*args, **kwargs)
-        else:
-            pass
-    return inner
-
-
-def salt_required(function):
-    ''' Run the provided function only if we can reach the salt master '''
-    def inner(*args, **kwargs):
-        ''' decorator '''
-        if dna.utils.is_running('salt-master') and is_allowed('salt'):
-            return function(*args, **kwargs)
-        else:
-            pass
-    return inner
-
-
-def consul_required(function):
-    ''' Run the provided function only if we can reach the salt master '''
-    def inner(*args, **kwargs):
-        ''' decorator '''
-        if dna.utils.is_running('consul') and is_allowed('consul'):
-            return function(*args, **kwargs)
-        else:
-            pass
-    return inner
+def module_required(module):
+    def wrapper(function):
+        ''' Run the provided function only if we can reach the serf cluster '''
+        def inner(*args, **kwargs):
+            ''' decorator '''
+            if dna.utils.is_running(module) and is_allowed(module):
+                return function(*args, **kwargs)
+            else:
+                return
+        return inner
+    return wrapper
 
 
 def is_allowed(command):

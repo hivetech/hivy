@@ -12,7 +12,6 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
-
 __project__ = 'hivy'
 __author__ = 'Xavier Bruhiere'
 __copyright__ = 'Hive Tech S.A.S'

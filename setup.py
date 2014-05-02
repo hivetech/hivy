@@ -11,6 +11,7 @@ if sys.argv[-1] == 'test':
 
 # Needs also : apt-get install swig
 requires = [
+    'pyzmq>=14.2.0',
     'pyconsul>=0.0.2',
     'dna>=0.0.4',
     'Flask-RESTful>=0.2.11',
@@ -26,7 +27,6 @@ requires = [
 
 def long_description():
     try:
-        #with codecs.open(readme, encoding='utf8') as f:
         with open('readme.md') as f:
             return f.read()
     except IOError:

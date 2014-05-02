@@ -1,0 +1,9 @@
+[report]
+omit =
+    */__init__.py
+    */python?.?/*
+    */.virtualenvs/*
+    */site-packages/*
+
+[run]
+source = hivy

@@ -12,16 +12,16 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
-import docker
-from hivy.genetics.saltstack import Saltstack
-from hivy.node.factory import NodeFactory
 import dna.logging
 import dna.utils
+import pyconsul.http
+from hivy.genetics.saltstack import Saltstack
+import hivy.node.factory as factory
 
 log = dna.logging.logger(__name__)
 
 
-class NodeFoundation(NodeFactory):
+class NodeFoundation(factory.NodeFactory):
     '''
     Basic container with additional methods to make it Hivy-ready :
       * Serf agent interface for service orchestration
@@ -33,54 +33,59 @@ class NodeFoundation(NodeFactory):
       - root_dir: /home/username
     '''
 
-    def __init__(self, image, name=None, role='node'):
+    def __init__(self, image, name=None):
         name = name or dna.utils.generate_random_name()
-        NodeFactory.__init__(self, image, name, role)
+        factory.NodeFactory.__init__(self, image, name)
 
         self.state = Saltstack()
+        self.consul = pyconsul.http.Consul()
 
-        # TODO Use self.consul.status['leader']
+        leader = self.consul.leader
+        consul_master = leader.split(':')[0] if 'error' not in leader else ''
+
         self.environment.update({
             'SALT_MASTER': self.state.master_ip,
-            'CONSUL_MASTER': self.state.master_ip
+            'CONSUL_MASTER': consul_master
         })
 
     def forget(self):
-        # TODO Gracefully shutdown consul node agent
-        # self.consul.local_agent.force_leave(self.name)
-        return 'not implemented', False
+        return self.consul.local_agent.force_leave(self.name)
 
-    def synthetize(self, profile, gene, data={}):
-        ''' Apply the given saltstack state on the current image '''
-        self.state.switch_context(profile, self.name)
-        self.state.store_data(profile, data)
-        cmd = 'state.sls' if gene in self.state.library else 'cmd.run'
-        return self.state.call([cmd], self.name, args=[[gene]])
+    def _build_link_env(self, link_name, link_network):
+        link_name = link_name.upper()
+        link_env = {
+            '{}_HOST'.format(link_name): link_network['IPAddress'],
+            '{}_PORTS_EXPOSED'.format(link_name):
+            ','.join(map(lambda x: x.split('/')[0],
+                         link_network['Ports'].keys()))
+        }
+
+        for port_spec in link_network['Ports']:
+            port = port_spec.split('/')[0]
+            link_env.update({
+                '{}_PORT_{}'.format(link_name, port): port
+            })
+        return link_env
 
     # NOTE Consul should provide a more efficient way to do that
+    @factory.safe_docker
     def discover(self, link_name):
         '''
         Search for the given service and update its environment with
         connection informations
         '''
-        try:
-            link_node = self.dock.inspect_container(link_name)
-        except docker.APIError, error:
-            log.error('failed to discover link', error=error)
-            return
+        link_node = self.dock.inspect_container(link_name)
 
-        link_name = link_name.upper()
-        tmp_env = {
-            '{}_HOST'.format(link_name):
-            link_node['NetworkSettings']['IPAddress'],
-            '{}_PORTS_EXPOSED'.format(link_name):
-            ','.join(map(lambda x: x.split('/')[0],
-                         link_node['NetworkSettings']['Ports'].keys()))
-        }
-        for port_spec in link_node['NetworkSettings']['Ports']:
-            port = port_spec.split('/')[0]
-            tmp_env.update({
-                '{}_PORT_{}'.format(link_name, port): port
-            })
-        self.environment.update(tmp_env)
-        self.links.append(tmp_env)
+        link_env = self._build_link_env(
+            link_name, link_node['NetworkSettings']
+        )
+        self.environment.update(link_env)
+        self.links.append(link_env)
+
+    def synthetize(self, profile, gene, data=None):
+        ''' Apply the given saltstack state on the current image '''
+        data = data or {}
+        self.state.switch_context(profile, self.name)
+        self.state.store_data(profile, data)
+        cmd = 'state.sls' if gene in self.state.library else 'cmd.run'
+        return self.state.call([cmd], self.name, args=[[gene]])
