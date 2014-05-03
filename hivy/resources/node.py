@@ -11,9 +11,9 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
-import os
 import docker
 import flask
+from flask.ext.restful import reqparse
 import dna.logging
 from dna.apy.resources import SecuredRestfulResource
 import hivy.utils as utils
@@ -26,17 +26,20 @@ log = dna.logging.logger(__name__)
 class Fleet(SecuredRestfulResource):
     ''' User nodes organization '''
 
-    def __init__(self):
-        docker_url = os.environ.get('DOCKER_URL', settings.DEFAULT_DOCKER_URL)
-        self.dock = docker.Client(
-            base_url=docker_url, version='0.7.6', timeout=10
-        )
-
     def get(self):
         ''' Provide nodes fleet overview '''
+        parser = reqparse.RequestParser()
+        parser.add_argument('where', default=settings.DEFAULT_DOCKER_URL)
+        args = parser.parse_args()
+
+        # TODO Check for args['where'] bad format and connection error
+        dock = docker.Client(
+            base_url=args['where'], version='0.7.6', timeout=10
+        )
+
         # TODO Limited to user nodes
         report = {}
-        for node in self.dock.containers():
+        for node in dock.containers():
             report[node['Names'][0]] = {
                 'created': node['Created'],
                 'image': node['Image'],
@@ -50,9 +53,8 @@ class Fleet(SecuredRestfulResource):
         return report
 
 
-# TODO Support custom provider
 class RestfulNode(SecuredRestfulResource):
-    ''' The "node foundation" as a restful resource '''
+    ''' Container High level management '''
 
     default_user = 'johndoe'
     node_name_semantic = '{}-{}'
@@ -67,24 +69,36 @@ class RestfulNode(SecuredRestfulResource):
         ''' Customize the standard node name to the user '''
         return self.node_name_semantic.format(self.user, image)
 
-    def _image_name(self, image):
+    def _image_name(self, image, user=None):
         ''' Customize the standard node name to the user '''
+        user = user or self.user
         tag = 'latest'
-        return self.image_name_semantic.format(
-            self.user, image, tag)
+        return self.image_name_semantic.format(user, image, tag)
+
+    def _requested_node(self, image):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user', type=str, default=self.user)
+        parser.add_argument('where', type=str)
+        args = parser.parse_args()
+
+        return NodeFoundation(
+            self._image_name(image, user=args['user']),
+            self._node_name(image),
+            docker_url=args.get('where')
+        )
 
     def get(self, image):
         ''' Fetch and return node informations '''
-        log.info('request node information', user=self.user)
-        return NodeFoundation(
-            self._image_name(image), self._node_name(image)).properties
+        log.info('inspect node', image=image, user=self.user)
+        return self._requested_node(image).properties
 
     def post(self, image):
         ''' Create and register a new node '''
+
         data = flask.request.get_json() if flask.request.json else {}
         log.info('request node creation', user=self.user, data=data)
 
-        node = NodeFoundation(self._image_name(image), self._node_name(image))
+        node = self._requested_node(image)
 
         for link in data.get('links', []):
             log.info('acquiring new link', link=link)
@@ -95,7 +109,8 @@ class RestfulNode(SecuredRestfulResource):
     def delete(self, image):
         ''' remove an existing node '''
         log.info('request node destruction', user=self.user)
-        node = NodeFoundation(self._image_name(image), self._node_name(image))
+        node = self._requested_node(image)
+
         feedback = node.destroy()
         is_success = node.forget()
         feedback.update({'unregistration': is_success})
@@ -103,7 +118,7 @@ class RestfulNode(SecuredRestfulResource):
 
     def put(self, image):
         ''' Manipulate the given node '''
-        node = NodeFoundation(self._image_name(image), self._node_name(image))
+        node = self._requested_node(image)
         results = {}
         if not flask.request.json or 'gene' not in flask.request.json:
             flask.abort(400)

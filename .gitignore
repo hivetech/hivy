@@ -63,3 +63,6 @@ docker-py
 # Deprecated for produciton
 #_reactor
 .python-version
+
+# Currently broken stuff, probably deprecated
+_*

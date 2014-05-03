@@ -33,9 +33,9 @@ class NodeFoundation(factory.NodeFactory):
       - root_dir: /home/username
     '''
 
-    def __init__(self, image, name=None):
+    def __init__(self, image, name=None, docker_url=None):
         name = name or dna.utils.generate_random_name()
-        factory.NodeFactory.__init__(self, image, name)
+        factory.NodeFactory.__init__(self, image, name, docker_url)
 
         self.state = Saltstack()
         self.consul = pyconsul.http.Consul()

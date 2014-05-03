@@ -35,6 +35,6 @@ class SystemTestCase(unittest.TestCase):
             ok_(service in res.data)
 
     def test_get_v0_doc(self):
-        res = self.app.get('/v0/doc')
+        res = self.app.get('/v0/docs')
         for field in ['doc', 'api', 'node']:
             self.assertIn(field, res.data)

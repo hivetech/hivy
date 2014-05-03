@@ -14,6 +14,7 @@ requires = [
     'pyzmq>=14.2.0',
     'pyconsul>=0.0.2',
     'dna>=0.0.4',
+    'redis>=2.9.1',
     'Flask-RESTful>=0.2.11',
     'docopt>=0.6.1',
     'itsdangerous>=0.23',

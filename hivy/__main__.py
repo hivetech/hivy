@@ -18,9 +18,9 @@ import hivy.conf
 def main():
     # Sentry and Database setup depends on environment variable
     #     - SENTRY_DNS [None]
-    #     - DB_NAME [apy]
-    #     - DB_HOST [localhost]
-    #     - DB_PORT [27017]
+    #     - MONGODB_NAME [apy]
+    #     - MONGODB_HOST [localhost]
+    #     - MONGODB_PORT [27017]
     application_ = dna.apy.core.Application
     application_.setup_routes(hivy.conf.ROUTES)
 

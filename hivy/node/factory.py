@@ -48,12 +48,12 @@ class NodeFactory(object):
     # See https://github.com/phusion/passenger-docker
     _phusion_command = ['/sbin/my_init', '--enable-insecure-key']
 
-    def __init__(self, image, name,
-                 docker_url=hivy.settings.DEFAULT_DOCKER_URL):
+    def __init__(self, image, name, docker_url=None):
 
         log.info('initiating node', image=image, name=name)
         self.image = image
         self.name = name
+        docker_url = docker_url or hivy.settings.DEFAULT_DOCKER_URL
         self.environment = {
             'NODE_ID': name,
         }

@@ -1,5 +1,6 @@
 pyconsul==0.0.2
 dna==0.0.4
+redis==2.9.1
 Flask==0.10.1
 Flask-RESTful==0.2.12
 Jinja2==2.7.2

@@ -12,13 +12,15 @@
 import dna.apy.resources
 import hivy.resources.system as system
 import hivy.resources.node as node
+import hivy.resources.proxy as proxy
 import hivy.utils as utils
 
 
 ROUTES = {
     '/': system.Status,
-    utils.api_url('doc'): system.Doc,
-    utils.api_url('user/<string:username>'): dna.apy.resources.User,
+    utils.api_url('docs'): system.Doc,
+    utils.api_url('users/<string:username>'): dna.apy.resources.User,
     utils.api_url('nodes'): node.Fleet,
-    utils.api_url('node/<string:image>'): node.RestfulNode
+    utils.api_url('nodes/<string:image>'): node.RestfulNode,
+    utils.api_url('proxy/<string:frontend>'): proxy.RestfulHipache
 }

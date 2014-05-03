@@ -18,7 +18,8 @@ import dna.logging
 import dna.apy.resources
 import hivy.utils
 import hivy.genetics.saltstack as saltstack
-from hivy.resources.node import RestfulNode
+from hivy.resources.node import RestfulNode, Fleet
+from hivy.resources.proxy import RestfulHipache
 import pyconsul.http
 
 
@@ -64,13 +65,21 @@ class Doc(restful.Resource):
         return flask.jsonify({
             'api': {
                 'GET /': Status.__doc__,
-                hivy.utils.api_doc('doc', 'GET'): Doc.__doc__,
+                hivy.utils.api_doc('docs', 'GET'): Doc.__doc__,
                 hivy.utils.api_doc(
-                    'node/<string:image>',
+                    'nodes', 'GET',
+                    where='localhost'): Fleet.__doc__,
+                hivy.utils.api_doc(
+                    'nodes/<string:image>',
                     'GET | POST | PUT | DELETE',
-                    link='db', ram=512): RestfulNode.__doc__,
+                    user='dockerfile', where='localhost'): RestfulNode.__doc__,
                 hivy.utils.api_doc(
-                    'user/<string:username>',
-                    'GET | PUT'): dna.apy.resources.User.__doc__
+                    'users/<string:username>',
+                    'GET | PUT'): dna.apy.resources.User.__doc__,
+                hivy.utils.api_doc(
+                    'proxy/<string:frontend>',
+                    'GET | POST | PUT | DELETE',
+                    node='ghost', name='blog', reset=True):
+                        RestfulHipache.__doc__
             }
         })

@@ -5,6 +5,10 @@ python:
 env:
   - COVERALLS_REPO_TOKEN=QuzWDBkLLYzWvkw4O0Z02vZpdYSFV4tvP
 
+services:
+ - mongodb
+ - redis
+
 before_install:
   - sudo apt-get -y install python-pip python-dev swig libssl-dev libzmq-dev
 
@@ -13,6 +17,7 @@ install:
   - pip install --use-mirrors -r dev-requirements.txt
 
 before_script:
+  - mkdir -p /var/cache/salt
   - mkdir -p shippable/codecoverage shippable/testresults
   - pep8 --ignore E265 hivy tests
 
