@@ -4,6 +4,7 @@
 import time
 import unittest
 from nose.tools import eq_, ok_
+import dna.test_utils
 import hivy.test_utils as test_utils
 from hivy.node.factory import NodeFactory
 
@@ -11,12 +12,16 @@ from hivy.node.factory import NodeFactory
 class NodeFactoryTestCase(unittest.TestCase):
 
     def setUp(self):
+        dna.test_utils.setup_logger(self)
         self.servers_test = '*'
         self.image_test = 'hivetech/base'
         self.name_test = 'test-node-factory'
         self.node = NodeFactory(
             self.image_test, self.name_test
         )
+
+    def tearDown(self):
+        dna.test_utils.teardown_logger(self)
 
     def test_initialize(self):
         eq_(self.node.links, [])

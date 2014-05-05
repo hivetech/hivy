@@ -38,3 +38,12 @@ def to_utf8_dict(request_data):
         if isinstance(value, list) else value.encode('utf-8')
         for key, value in request_data.iteritems()
     }
+
+
+def normalize_link_name(fct):
+    def inner(link_name, link_network):
+        return fct(
+            link_name.upper().split('-')[-1].upper(),
+            link_network
+        )
+    return inner

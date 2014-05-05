@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 
@@ -15,6 +14,7 @@
 import dna.logging
 import dna.utils
 import pyconsul.http
+import hivy.utils
 from hivy.genetics.saltstack import Saltstack
 import hivy.node.factory as factory
 
@@ -51,8 +51,8 @@ class NodeFoundation(factory.NodeFactory):
     def forget(self):
         return self.consul.local_agent.force_leave(self.name)
 
+    @hivy.utils.normalize_link_name
     def _build_link_env(self, link_name, link_network):
-        link_name = link_name.upper()
         link_env = {
             '{}_HOST'.format(link_name): link_network['IPAddress'],
             '{}_PORTS_EXPOSED'.format(link_name):

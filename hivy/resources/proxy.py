@@ -37,6 +37,7 @@ class RestfulHipache(SecuredRestfulResource):
         ''' Map a node to the given frontend '''
         parser = reqparse.RequestParser()
         parser.add_argument('node', type=str, action='append')
+        # NOTE <name> parameter is pretty useless
         parser.add_argument('name', type=str, required=True)
         parser.add_argument('reset', type=bool, default=False)
         args = parser.parse_args()

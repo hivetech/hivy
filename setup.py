@@ -61,6 +61,5 @@ setup(
         'Topic :: Software Development',
         'Topic :: System :: Shells',
     ],
-    scripts=['scripts/hivy-watchdog'],
     data_files=[(os.path.expanduser('~/.hivy'), ['./Procfile'])]
 )
