@@ -11,6 +11,7 @@
   :license: Apache 2.0, see LICENSE for more details.
 '''
 
+import os
 import dna.logging
 import dna.utils
 import pyconsul.http
@@ -45,7 +46,9 @@ class NodeFoundation(factory.NodeFactory):
 
         self.environment.update({
             'SALT_MASTER': self.state.master_ip,
-            'CONSUL_MASTER': consul_master
+            'CONSUL_MASTER': consul_master,
+            # TODO Use consul to read logstash address
+            'LOGSTASH_SERVER': os.environ.get('LOGSTASH_SERVER', '0.0.0.0')
         })
 
     def forget(self):

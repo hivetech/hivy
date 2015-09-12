@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+# vim:fenc=utf-8
+
+'''
+  Packaging
+  ---------
+
+  :copyright (c) 2014 Xavier Bruhiere
+  :license: Apache 2.0, see LICENSE for more details.
+'''
+
 import sys
 import os
 from setuptools import setup, find_packages
@@ -11,15 +22,15 @@ if sys.argv[-1] == 'test':
 
 # Needs also : apt-get install swig
 requires = [
-    'pyzmq>=14.2.0',
-    'pyconsul>=0.0.2',
-    'dna>=0.0.4',
+    'pyzmq>=14.3.0',
+    'pyconsul>=0.0.3',
+    'dna>=0.0.6',
     'redis>=2.9.1',
     'Flask-RESTful>=0.2.11',
     'docopt>=0.6.1',
     'itsdangerous>=0.23',
-    'pytz>=2013.9',
-    'salt>=2014.1.3',
+    'pytz>=2014.3',
+    'salt>=2014.1.4',
     'blinker>=1.3',
     'sh>=1.09',
     'docker-py>=0.3.1'

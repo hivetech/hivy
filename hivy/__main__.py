@@ -22,6 +22,7 @@ def main():
     #     - MONGODB_HOST [localhost]
     #     - MONGODB_PORT [27017]
     application_ = dna.apy.core.Application
+    application_.setup_db()
     application_.setup_routes(hivy.conf.ROUTES)
 
     # Parse the command line and serve the API

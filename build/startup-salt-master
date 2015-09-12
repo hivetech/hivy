@@ -1,0 +1,7 @@
+#! /bin/bash
+set -e
+
+# Don't require new keys validation
+sed -i 's/#auto_accept: False/auto_accept: True/g' /etc/salt/master
+
+/usr/bin/salt-master -l info -c /etc/salt >>/var/log/salt-master 2>&1

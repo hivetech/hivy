@@ -2,7 +2,7 @@ Hivy
 ====
 
 [![Latest Version](https://pypip.in/v/hivy/badge.png)](https://pypi.python.org/pypi/hivy/)
-[![Build Status](https://drone.io/github.com/hivetech/hivy/status.png)](https://drone.io/github.com/hivetech/hivy/latest)
+[![Build Status](https://api.shippable.com/projects/53203282d7c4ec8601278989/badge/master)](https://www.shippable.com/projects/53203282d7c4ec8601278989)
 [![Coverage Status](https://coveralls.io/repos/hivetech/hivy/badge.png)](https://coveralls.io/r/hivetech/hivy)
 [![Code Health](https://landscape.io/github/hivetech/hivy/master/landscape.png)](https://landscape.io/github/hivetech/hivy/master)
 [![Requirements Status](https://requires.io/github/hivetech/hivy/requirements.png?branch=master)](https://requires.io/github/hivetech/hivy/requirements/?branch=master)

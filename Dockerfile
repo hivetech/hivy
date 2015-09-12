@@ -11,6 +11,8 @@ RUN /hivy/build/hivy.sh
 RUN mkdir /etc/service/hivy && \
   mv /hivy/build/startup-hivy /etc/service/hivy/run
 
+# TODO Install ansible
+
 # Override consul behavior to act as server
 RUN mv /hivy/build/startup-consul /etc/service/consul/run
 
